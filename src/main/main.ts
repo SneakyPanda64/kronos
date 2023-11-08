@@ -14,6 +14,14 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import {
+  createHeader,
+  createTab,
+  getTabs,
+  hideTab,
+  isTabHidden,
+  showTab,
+} from './tab';
 
 class AppUpdater {
   constructor() {
@@ -43,23 +51,23 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
-};
+//   return installer
+//     .default(
+//       extensions.map((name) => installer[name]),
+//       forceDownload,
+//     )
+//     .catch(console.log);
+// };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  // if (isDebug) {
+  //   await installExtensions();
+  // }
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -71,29 +79,49 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 800,
+    height: 800,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
+      nodeIntegration: true,
+      // preload: app.isPackaged
+      //   ? path.join(__dirname, 'preload.js')
+      //   : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
-    }
+  ipcMain.on('request-tabs', (event) => {
+    if (mainWindow == null) return;
+    const tabs = getTabs(mainWindow); // Assuming you have a function that retrieves the tabs as an array, named getTabs()
+    event.reply('tabs-reply', tabs);
   });
+  ipcMain.on('select-tab', (event, tabId) => {
+    if (mainWindow == null) return;
+    console.log('selecting tabid: ', tabId);
+    getTabs(mainWindow).forEach((element) => {
+      if (mainWindow == null) return;
+      if (element.id !== tabId) {
+        hideTab(mainWindow, element.id);
+      } else {
+        showTab(mainWindow, tabId);
+      }
+    });
+  });
+  ipcMain.on('new-tab', async (event) => {
+    if (mainWindow === null) return;
+    let tabId = await createTab(mainWindow, 'https://google.com/');
+    event.reply('new-tab-reply', tabId);
+  });
+  await createHeader(mainWindow);
+  let tabId = await createTab(
+    mainWindow,
+    'https://github.com/electron/forge/issues/2560',
+  );
+  await createTab(mainWindow, 'https://google.com/');
+  mainWindow.show();
 
+  // mainWindow.webContents.on('dom-ready', () => {
+
+  // });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });

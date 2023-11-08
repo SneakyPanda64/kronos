@@ -11,7 +11,6 @@ const configuration: webpack.Configuration = {
   externals: [...Object.keys(externals || {})],
 
   stats: 'errors-only',
-
   module: {
     rules: [
       {
@@ -47,6 +46,10 @@ const configuration: webpack.Configuration = {
     modules: [webpackPaths.srcPath, 'node_modules'],
     // There is no need to add aliases here, the paths in tsconfig get mirrored
     plugins: [new TsconfigPathsPlugins()],
+    fallback: {
+      fs: false,
+      path: require.resolve('path-browserify'),
+    },
   },
 
   plugins: [
