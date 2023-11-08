@@ -12,14 +12,15 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {
   createHeader,
   createTab,
+  deleteTab,
   getTabs,
   hideTab,
   isTabHidden,
+  selectTab,
   showTab,
 } from './tab';
 
@@ -82,8 +83,8 @@ const createWindow = async () => {
     width: 800,
     height: 800,
     icon: getAssetPath('icon.png'),
+    autoHideMenuBar: true,
     webPreferences: {
-      nodeIntegration: true,
       // preload: app.isPackaged
       //   ? path.join(__dirname, 'preload.js')
       //   : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -97,19 +98,17 @@ const createWindow = async () => {
   ipcMain.on('select-tab', (event, tabId) => {
     if (mainWindow == null) return;
     console.log('selecting tabid: ', tabId);
-    getTabs(mainWindow).forEach((element) => {
-      if (mainWindow == null) return;
-      if (element.id !== tabId) {
-        hideTab(mainWindow, element.id);
-      } else {
-        showTab(mainWindow, tabId);
-      }
-    });
+    selectTab(mainWindow, tabId);
   });
   ipcMain.on('new-tab', async (event) => {
     if (mainWindow === null) return;
     let tabId = await createTab(mainWindow, 'https://google.com/');
     event.reply('new-tab-reply', tabId);
+    await selectTab(mainWindow, tabId);
+  });
+  ipcMain.on('delete-tab', async (event, tabId: number) => {
+    if (mainWindow === null) return;
+    deleteTab(mainWindow, tabId);
   });
   await createHeader(mainWindow);
   let tabId = await createTab(
@@ -125,9 +124,6 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
 
   // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {

@@ -3,11 +3,41 @@ import { resolveHtmlPath } from './util';
 import path from 'path';
 import { getFavicon } from './util';
 
+const NAVIGATOR_HEIGHT = 200;
+
+export async function selectTab(win: BrowserWindow, tabId: number) {
+  getTabs(win).forEach((element) => {
+    if (element.id !== tabId) {
+      hideTab(win, element.id);
+    } else {
+      showTab(win, tabId);
+    }
+  });
+}
+
+export async function deleteTab(win: BrowserWindow, tabId: number) {
+  let view = findViewById(win, tabId);
+  if (view == null) return;
+  console.log('deleting tab:', tabId);
+  win.removeBrowserView(view);
+  (view.webContents as any).destroy();
+  const header = findViewById(win, 2);
+  if (header != null) {
+    const tabs = getTabs(win);
+    header.webContents.send('tabs-updated', tabs);
+  }
+}
+
 export async function createTab(win: BrowserWindow, url: string) {
   const view = new BrowserView();
   win.addBrowserView(view);
-  view.setBounds({ x: 0, y: 100, width: 800, height: 700 });
-  view.setAutoResize({ width: true, height: true });
+  view.setBounds({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+  view.setAutoResize({ width: false, height: false });
 
   const header = findViewById(win, 2);
   if (header != null) {
@@ -15,7 +45,6 @@ export async function createTab(win: BrowserWindow, url: string) {
       const tabs = getTabs(win);
       header.webContents.send('tabs-updated', tabs);
     });
-    let last_accessed: any = undefined;
     view.webContents.on('page-favicon-updated', async (event, favicons) => {
       const tabs = getTabs(win);
       let newTabs = tabs;
@@ -26,9 +55,6 @@ export async function createTab(win: BrowserWindow, url: string) {
       });
       header.webContents.send('tabs-updated', newTabs);
     });
-
-    // const tabs = getTabs(win);
-    // header.webContents.send('tabs-updated', tabs);
   }
   await view.webContents.loadURL(url);
 
@@ -62,13 +88,20 @@ export async function hideTab(win: BrowserWindow, tabId: number) {
   console.log('hidding tab', view.webContents.id, tabId);
   view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
   console.log('hidding tab', view.webContents.id, tabId);
+  view.setAutoResize({ width: false, height: false });
 }
 
 export async function showTab(win: BrowserWindow, tabId: number) {
   let view = findViewById(win, tabId);
   if (view == null) return;
   let wb = win.getBounds();
-  view.setBounds({ x: 0, y: 100, width: wb.width, height: wb.height - 100 });
+  view.setBounds({
+    x: 0,
+    y: NAVIGATOR_HEIGHT,
+    width: wb.width,
+    height: wb.height - NAVIGATOR_HEIGHT,
+  });
+  view.setAutoResize({ width: true, height: true });
 }
 
 export function isTabHidden(win: BrowserWindow, tabId: number) {
@@ -89,7 +122,7 @@ export async function createHeader(win: BrowserWindow) {
     },
   });
   win.addBrowserView(view);
-  view.setBounds({ x: 0, y: 0, width: 800, height: 100 });
+  view.setBounds({ x: 0, y: 0, width: 800, height: NAVIGATOR_HEIGHT });
   view.setAutoResize({ width: true });
   view.webContents.closeDevTools();
   view.webContents.openDevTools({ mode: 'detach' });
