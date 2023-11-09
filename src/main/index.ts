@@ -3,14 +3,20 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createHeader, createTab, deleteTab, getTabs, selectTab } from './tab'
+import { deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
 
 async function createWindow(): Promise<void> {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 800,
+    minHeight: 200,
+    minWidth: 400,
     show: false,
+    // useContentSize: true,
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    frame: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       // preload: join(__dirname, '../preload/index.js'),
@@ -18,31 +24,36 @@ async function createWindow(): Promise<void> {
   })
 
   await createHeader(mainWindow)
-  await createTab(mainWindow, 'https://github.com/electron/forge/issues/2560')
-  await createTab(mainWindow, 'https://google.com/')
-
+  // await createTab(mainWindow, 'https://github.com/electron/forge/issues/2560')
+  let tabId = await createTab(mainWindow, 'https://google.com/')
+  await selectTab(mainWindow, tabId)
   // mainWindow.on('ready-to-show', () => {
 
   // })
   ipcMain.on('request-tabs', (event) => {
-    if (mainWindow == null) return
     const tabs = getTabs(mainWindow) // Assuming you have a function that retrieves the tabs as an array, named getTabs()
     event.reply('tabs-reply', tabs)
   })
   ipcMain.on('select-tab', (event, tabId) => {
-    if (mainWindow == null) return
     console.log('selecting tabid: ', tabId)
     selectTab(mainWindow, tabId)
   })
   ipcMain.on('new-tab', async (event) => {
-    if (mainWindow === null) return
     let tabId = await createTab(mainWindow, 'https://google.com/')
     event.reply('new-tab-reply', tabId)
     await selectTab(mainWindow, tabId)
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
-    if (mainWindow === null) return
     deleteTab(mainWindow, tabId)
+  })
+  ipcMain.on('close-window', async (event, windowId: number) => {
+    deleteWindow(mainWindow, windowId)
+  })
+  ipcMain.on('min-window', async (event, windowId: number) => {
+    minimiseWindow(mainWindow, windowId)
+  })
+  ipcMain.on('toggle-max-window', async (event, windowId: number) => {
+    toggleMaximiseWindow(mainWindow, windowId)
   })
   mainWindow.show()
 

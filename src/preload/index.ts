@@ -24,6 +24,17 @@ let indexBridge = {
       callback()
     })
     ipcRenderer.send('delete-tab', tabId)
+  },
+  window: {
+    closeWindow: (windowId: number) => {
+      ipcRenderer.send('close-window', windowId)
+    },
+    minWindow: (windowId: number) => {
+      ipcRenderer.send('min-window', windowId)
+    },
+    toggleMaxWindow: (windowId: number) => {
+      ipcRenderer.send('toggle-max-window', windowId)
+    }
   }
 }
 

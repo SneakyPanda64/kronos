@@ -4,7 +4,7 @@ import path from 'path'
 import { getFavicon } from './util'
 import { is } from '@electron-toolkit/utils'
 
-const NAVIGATOR_HEIGHT = 100
+const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(win: BrowserWindow, tabId: number) {
   getTabs(win).forEach((element) => {
@@ -120,6 +120,7 @@ export async function createHeader(win: BrowserWindow) {
     webPreferences: {
       devTools: true,
       nodeIntegration: true,
+
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
