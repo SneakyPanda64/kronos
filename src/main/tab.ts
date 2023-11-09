@@ -1,10 +1,11 @@
 import { BrowserView, BrowserWindow } from 'electron'
 // import { resolveHtmlPath } from './util'
 import path from 'path'
-import { getFavicon } from './util'
+import { findViewById, getFavicon } from './util'
 import { is } from '@electron-toolkit/utils'
 
 const NAVIGATOR_HEIGHT = 80
+const WINDOW_WIDTH = 600
 
 export async function selectTab(win: BrowserWindow, tabId: number) {
   getTabs(win).forEach((element) => {
@@ -120,13 +121,13 @@ export async function createHeader(win: BrowserWindow) {
     webPreferences: {
       devTools: true,
       nodeIntegration: true,
-
+      webSecurity: false,
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
   win.addBrowserView(view)
-  view.setBounds({ x: 0, y: 0, width: 800, height: NAVIGATOR_HEIGHT })
-  view.setAutoResize({ width: true })
+  view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
+  view.setAutoResize({ width: true, height: false })
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -134,20 +135,4 @@ export async function createHeader(win: BrowserWindow) {
   }
   view.webContents.closeDevTools()
   view.webContents.openDevTools({ mode: 'detach' })
-}
-
-function findViewById(win: BrowserWindow, id: number): BrowserView | null {
-  let found: BrowserView | boolean = false
-  win.getBrowserViews().forEach((elem) => {
-    if (elem.webContents.id == id) {
-      console.log('compare: ', elem.webContents.id, id)
-      found = elem
-    }
-  })
-  if (found == false) {
-    console.log(id, 'not found')
-    return null
-  }
-  console.log(id, 'found')
-  return found
 }

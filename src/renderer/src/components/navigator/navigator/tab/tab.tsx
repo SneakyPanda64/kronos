@@ -16,7 +16,7 @@ export default function TabBar(props: {
   const newTabButton = () => {
     return (
       <div
-        className="py-2 px-2 hover:bg-s-blue hover:bg-opacity-30 rounded-lg"
+        className="py-2 px-2 hover:bg-s-blue hover:bg-opacity-30 rounded-lg m-1"
         onClick={handleNewTab}
       >
         <IoMdAdd size={25} />
@@ -29,7 +29,33 @@ export default function TabBar(props: {
     props.setSelectedTab(id)
   }
   const handleDeleteTab = async (tabId: number) => {
-    window.indexBridge?.deleteTab(() => {}, tabId)
+    let newTab, newTabIndex
+    if (tabId == props.selectedTab) {
+      newTabIndex = -2
+      if (props.tabs.length == 1) {
+        window.indexBridge?.window.closeWindow(324)
+      } else {
+        props.tabs.forEach((tab, index) => {
+          if (tab.id == tabId) {
+            if (props.tabs.length < index + 2) {
+              newTabIndex = index - 1
+            } else {
+              newTabIndex = index + 1
+            }
+          }
+        })
+      }
+
+      newTab = props.tabs[newTabIndex]
+    }
+
+    console.log('prev', newTabIndex)
+    window.indexBridge?.deleteTab(() => {
+      if (tabId == props.selectedTab) {
+        console.log('switching tab to', newTabIndex)
+        handleTab(newTab.id)
+      }
+    }, tabId)
   }
   useEffect(() => {
     console.log('requesting tabs')
@@ -47,6 +73,7 @@ export default function TabBar(props: {
     window.indexBridge?.newTab((tabId: number) => {
       console.log('new tab: ', tabId)
       props.setSelectedTab(tabId)
+      scrollOffset(100000)
     })
   }
 
@@ -62,18 +89,19 @@ export default function TabBar(props: {
   }
   const containerRef = useRef(null)
   const [isOverflow, setIsOverflow] = useState(false)
+  const scrollOffset = (offset: number) => {
+    ;(containerRef.current as any).scrollLeft += offset
+  }
   useEffect(() => {
     // try {
-    if (containerRef.current == null) return () => {}
+    if (containerRef.current == null) return
     const handleMouseWheel = (event) => {
-      ;(containerRef.current as any).scrollLeft +=
-        (event.deltaY + 1) * (props.tabs.length + 1) * 0.2
-      console.log('scroll!', event.deltaY, containerRef.current as any)
-
+      scrollOffset((event.deltaY + 1) * 0.5)
       event.preventDefault()
     }
     ;(containerRef.current as any).addEventListener('wheel', handleMouseWheel)
   }, [])
+
   useEffect(() => {
     try {
       setIsOverflow(
@@ -114,10 +142,10 @@ export default function TabBar(props: {
           {!isOverflow ? (
             <div className="">{newTabButton()}</div>
           ) : (
-            <div className="block md:hidden">{newTabButton()}</div>
+            <div className="block mr-5 md:hidden md:mr-0">{newTabButton()}</div>
           )}
         </div>
-        <div className="w-full draggable bg-red-500"></div>
+        <div className="w-full draggable"></div>
       </div>
       {isOverflow ? (
         <div className="my-auto ml-2 hidden md:block">

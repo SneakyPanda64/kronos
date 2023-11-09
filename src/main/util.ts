@@ -1,7 +1,7 @@
 /* eslint import/prefer-default-export: off */
 import { URL } from 'url'
 import path from 'path'
-import { BrowserView } from 'electron'
+import { BrowserView, BrowserWindow } from 'electron'
 
 // export function resolveHtmlPath(htmlFileName: string) {
 //   if (process.env.NODE_ENV === 'development') {
@@ -32,4 +32,20 @@ export async function getFavicon(browserView: BrowserView) {
   `,
     true
   )
+}
+
+export function findViewById(win: BrowserWindow, id: number): BrowserView | null {
+  let found: BrowserView | boolean = false
+  win.getBrowserViews().forEach((elem) => {
+    if (elem.webContents.id == id) {
+      console.log('compare: ', elem.webContents.id, id)
+      found = elem
+    }
+  })
+  if (found == false) {
+    console.log(id, 'not found')
+    return null
+  }
+  console.log(id, 'found')
+  return found
 }

@@ -20,7 +20,7 @@ let indexBridge = {
     ipcRenderer.send('new-tab')
   },
   deleteTab: (callback: any, tabId: number) => {
-    ipcRenderer.once('delete-tab-reply', (event, tabId) => {
+    ipcRenderer.once('delete-tab-reply', (event) => {
       callback()
     })
     ipcRenderer.send('delete-tab', tabId)

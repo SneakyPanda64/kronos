@@ -8,10 +8,10 @@ import { deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
 async function createWindow(): Promise<void> {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 800,
+    width: 600,
+    height: 600,
     minHeight: 200,
-    minWidth: 400,
+    minWidth: 500,
     show: false,
     // useContentSize: true,
     autoHideMenuBar: true,
@@ -19,7 +19,7 @@ async function createWindow(): Promise<void> {
     frame: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      // preload: join(__dirname, '../preload/index.js'),
+      webSecurity: false
     }
   })
 
@@ -44,7 +44,8 @@ async function createWindow(): Promise<void> {
     await selectTab(mainWindow, tabId)
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
-    deleteTab(mainWindow, tabId)
+    await deleteTab(mainWindow, tabId)
+    event.reply('delete-tab-reply')
   })
   ipcMain.on('close-window', async (event, windowId: number) => {
     deleteWindow(mainWindow, windowId)

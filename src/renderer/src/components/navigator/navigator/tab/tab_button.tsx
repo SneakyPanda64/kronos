@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { Tab } from '../../../../interfaces.ts'
 import { RxCross2 } from 'react-icons/rx'
 
@@ -12,48 +13,50 @@ export default function TabButton(props: {
 }) {
   console.log(props.tab.favicon)
   return (
-    <div className="w-44 min-w-max" key={props.key}>
+    <div className="w-16 min-w-max flex" key={props.key}>
       <div
         onClick={(e) => {
           e.stopPropagation() // Stop propagation here
           props.handleTab(props.tab.id)
+          // if ((e.currentTarget.scrollWidth ?? 0) > e.currentTarget.clientWidth) {
+          // (containerRef.current as any).scrollWidth ?? 0) > (containerRef.current as any).clientWidth
+          e.currentTarget.scrollIntoView({ behavior: 'smooth' })
         }}
         className={`h-full text-sm hover:cursor-default`}
       >
         {/* <button onClick={(e) => e.preventDefault()}> */}
         {/* <img src={props.tab.favicon} /> */}
-        <div
-          className={
-            `mx-2 mt-0.5 p-1 bg-s-blue rounded-lg flex ` +
-            (props.tab.id === props.selectedTab
-              ? ' bg-opacity-50'
-              : ' bg-opacity-20 hover:bg-opacity-30')
-          }
-        >
-          <h1 className="py-1 my-auto select-none">
-            {props.tab.title.split('').slice(0, 25).join('')}
-          </h1>
+        <div className="pt-1 mb-4">
           <div
-            className="my-auto ml-auto"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation() // Stop propagation here
-              props.handleDeleteTab(props.tab.id)
-            }}
+            className={
+              `mx-2 p-1 bg-s-blue  rounded-tl-lg rounded-tr-lg flex ` +
+              (props.tab.id === props.selectedTab ? ' bg-opacity-20' : ' bg-opacity-5')
+            }
           >
-            <div className="ml-2 p-1 hover:bg-s-blue rounded-lg">
-              <RxCross2 color={'white'} />
+            <img
+              className={`w-4 h-4 ml-1 mr-2 my-auto select-none`}
+              src={props.favicons[props.tab.id]}
+              style={{ display: 'none' }}
+              width={15}
+              height={15}
+              onLoad={(e) => (e.currentTarget.style.display = 'block')}
+              onLoadStart={(e) => (e.currentTarget.style.display = 'none')}
+            />
+            <h1 className="py-1 my-auto select-none truncate max-w-[12rem]">{props.tab.title}</h1>
+            <div
+              className="my-auto ml-auto"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation() // Stop propagation here
+                props.handleDeleteTab(props.tab.id)
+              }}
+            >
+              <div className="ml-2 p-1 hover:bg-s-blue rounded-lg">
+                <RxCross2 color={'white'} />
+              </div>
             </div>
           </div>
         </div>
-        {/* <h2>{props.favicons[`${props.tab.id}`]}</h2> */}
-        {/* </button> */}
-        {/* <button
-          className="bg-black text-red-500"
-          onClick={() => props.handleDeleteTab(props.tab.id)}
-        >
-          Delete
-        </button> */}
       </div>
     </div>
   )
