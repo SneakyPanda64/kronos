@@ -1,10 +1,11 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom'
+import { MemoryRouter as Router, Routes, Route, HashRouter } from 'react-router-dom'
 import icon from '../../assets/icon.svg'
 import './App.css'
 import { useEffect, useState } from 'react'
 import { Tab, Favicon } from './interfaces.ts'
 import Navigator from './components/navigator/navigator.tsx'
 import TabBar from './components/navigator/navigator/tab/tab.tsx'
+import ErrorPage from './pages/error.tsx'
 // import { ipcRenderer, ipcMain } from 'electron'; // Use `require` here
 function Main() {
   return (
@@ -16,10 +17,11 @@ function Main() {
 
 export default function App() {
   return (
-    <Router>
+    <HashRouter>
       <Routes>
-        <Route path="/" element={<Main />} />
+        <Route path="/" Component={Main} />
+        <Route path="/error" Component={ErrorPage} />
       </Routes>
-    </Router>
+    </HashRouter>
   )
 }

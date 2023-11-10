@@ -1,0 +1,39 @@
+import { AxiosError, default as axios } from 'axios'
+import { BrowserWindow } from 'electron'
+import { findViewById, router } from './util'
+import { encode } from 'url-safe-base64'
+const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
+
+export async function resolveUrl(url: string) {
+  let res
+  try {
+    res = await axios.get(url)
+    return ''
+    // console.log(res)
+  } catch (e: any) {
+    if (e.response != undefined) {
+      return ''
+    }
+    // console.log('ERROR', ')
+    return (e as AxiosError).code
+  }
+}
+
+export async function goToUrl(win: BrowserWindow, tabId: number, url: string) {
+  let view = findViewById(win, tabId)
+  if (view === null) return
+  const protocols = ['http', 'https']
+  let errorId: string | undefined = ''
+  if (!protocols.includes(url.split('://')[0])) {
+    url = `https://google.com/search?q=${url}`
+  } else {
+    errorId = await resolveUrl(url)
+  }
+  if (errorId === '') {
+    await view.webContents.loadURL(url)
+  } else {
+    const urlHash = encode(Buffer.from(url).toString('base64'))
+    await router(view, `error?id=${errorId}&url=${urlHash}&verify=${VERIFY_ID}`)
+    view.webContents.openDevTools({ mode: 'detach' })
+  }
+}

@@ -1,7 +1,7 @@
 import { BrowserView, BrowserWindow } from 'electron'
 // import { resolveHtmlPath } from './util'
 import path from 'path'
-import { findViewById, getFavicon } from './util'
+import { findViewById, getFavicon, router } from './util'
 import { is } from '@electron-toolkit/utils'
 
 const NAVIGATOR_HEIGHT = 80
@@ -78,6 +78,10 @@ export function getTabs(win: BrowserWindow, favicon = '') {
       url: elem.webContents.getURL(),
       favicon: ''
     }
+    if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
+      tab.url = ''
+    }
+    console.log(tab)
     if (favicon !== undefined) tab.favicon = favicon
     tabs.push(tab)
   })
@@ -116,6 +120,22 @@ export function isTabHidden(win: BrowserWindow, tabId: number) {
   return false
 }
 
+export async function goBack(win: BrowserWindow, tabId: number) {
+  let view = findViewById(win, tabId)
+  if (view === null) return
+  if (view.webContents.canGoBack()) {
+    view.webContents.goBack()
+  }
+}
+
+export async function goForward(win: BrowserWindow, tabId: number) {
+  let view = findViewById(win, tabId)
+  if (view === null) return
+  if (view.webContents.canGoForward()) {
+    view.webContents.goForward()
+  }
+}
+
 export async function createHeader(win: BrowserWindow) {
   const view = new BrowserView({
     webPreferences: {
@@ -128,11 +148,15 @@ export async function createHeader(win: BrowserWindow) {
   win.addBrowserView(view)
   view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
   view.setAutoResize({ width: true, height: false })
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    await view.webContents.loadFile(path.join(__dirname, '../renderer/index.html'))
-  }
+  await router(view, '')
+  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  //   await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  // } else {
+  //   await view.webContents.loadURL('file://' + path.join(__dirname, '../renderer/index.html'))
+  // }
+  win.on('leave-full-screen', () => {
+    console.log('left full screen')
+  })
   view.webContents.closeDevTools()
   view.webContents.openDevTools({ mode: 'detach' })
 }

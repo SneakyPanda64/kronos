@@ -2,6 +2,7 @@
 import { URL } from 'url'
 import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
+import { is } from '@electron-toolkit/utils'
 
 // export function resolveHtmlPath(htmlFileName: string) {
 //   if (process.env.NODE_ENV === 'development') {
@@ -48,4 +49,14 @@ export function findViewById(win: BrowserWindow, id: number): BrowserView | null
   }
   console.log(id, 'found')
   return found
+}
+
+export async function router(view: BrowserView, subPath: string) {
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {})
+  } else {
+    await view.webContents.loadURL(
+      'file://' + path.join(__dirname, `../renderer/index.html#${subPath}`)
+    )
+  }
 }

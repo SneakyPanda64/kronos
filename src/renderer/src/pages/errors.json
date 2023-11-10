@@ -1,0 +1,20 @@
+{
+  "errors": {
+    "ENOTFOUND": {
+      "title": "Hmm. We're having trouble finding that site.",
+      "subtitle": "We can't connect to the server at {{URL}}",
+      "support": {
+        "title": "If you entered the right address, you can:",
+        "list": [
+          "Try again later",
+          "Check your network connection",
+          "Check that Firefox has permission to access the web (you might be connected but behind a firewall)"
+        ]
+      }
+    },
+    "DEFAULT": {
+      "title": "Something went wrong!",
+      "subtitle": "{{ERROR_CODE}}"
+    }
+  }
+}

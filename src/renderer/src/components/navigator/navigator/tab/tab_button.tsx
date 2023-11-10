@@ -29,19 +29,27 @@ export default function TabButton(props: {
         <div className="pt-1 mb-4">
           <div
             className={
-              `mx-2 p-1 bg-s-blue  rounded-tl-lg rounded-tr-lg flex ` +
+              `mx-1 p-1 bg-s-blue  rounded-tl-lg rounded-tr-lg flex ` +
               (props.tab.id === props.selectedTab ? ' bg-opacity-20' : ' bg-opacity-5')
             }
           >
-            <img
-              className={`w-4 h-4 ml-1 mr-2 my-auto select-none`}
-              src={props.favicons[props.tab.id]}
-              style={{ display: 'none' }}
-              width={15}
-              height={15}
-              onLoad={(e) => (e.currentTarget.style.display = 'block')}
-              onLoadStart={(e) => (e.currentTarget.style.display = 'none')}
-            />
+            {props.favicons[props.tab.id] != '' ? (
+              <img
+                className={`w-4 h-4 ml-1 mr-2 my-auto select-none`}
+                src={props.favicons[props.tab.id]}
+                style={{ display: 'none' }}
+                width={15}
+                height={15}
+                onLoad={(e) => (e.currentTarget.style.display = 'block')}
+                onLoadStart={(e) => (e.currentTarget.style.display = 'none')}
+                onError={(e) => {
+                  console.log('error with loading favicon!')
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            ) : (
+              <></>
+            )}
             <h1 className="py-1 my-auto select-none truncate max-w-[12rem]">{props.tab.title}</h1>
             <div
               className="my-auto ml-auto"

@@ -2,9 +2,10 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { createHeader, createTab, deleteTab, getTabs, selectTab } from './tab'
+import { createHeader, createTab, deleteTab, getTabs, goBack, goForward, selectTab } from './tab'
 import { deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
-
+import { goToUrl, resolveUrl } from './url'
+import { findViewById, router } from './util'
 async function createWindow(): Promise<void> {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -24,6 +25,7 @@ async function createWindow(): Promise<void> {
   })
 
   await createHeader(mainWindow)
+
   // await createTab(mainWindow, 'https://github.com/electron/forge/issues/2560')
   let tabId = await createTab(mainWindow, 'https://google.com/')
   await selectTab(mainWindow, tabId)
@@ -55,6 +57,18 @@ async function createWindow(): Promise<void> {
   })
   ipcMain.on('toggle-max-window', async (event, windowId: number) => {
     toggleMaximiseWindow(mainWindow, windowId)
+  })
+  ipcMain.on('go-to-url', async (event, tabId: number, url: string) => {
+    await goToUrl(mainWindow, tabId, url)
+    event.reply('go-to-url-reply', '')
+  })
+  ipcMain.on('go-back', async (event, tabId: number) => {
+    await goBack(mainWindow, tabId)
+    event.reply('go-back-reply')
+  })
+  ipcMain.on('go-forward', async (event, tabId: number) => {
+    await goForward(mainWindow, tabId)
+    event.reply('go-forward-reply')
   })
   mainWindow.show()
 

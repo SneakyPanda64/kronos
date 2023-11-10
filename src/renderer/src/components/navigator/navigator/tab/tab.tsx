@@ -3,8 +3,8 @@ import { Tab } from '../../../../interfaces.ts'
 import TabButton from './tab_button.tsx'
 import { IoMdAdd } from 'react-icons/io'
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
-import DetectableOverflow from 'react-detectable-overflow'
-
+import { Base64 } from 'js-base64'
+import { decode } from 'url-safe-base64'
 export default function TabBar(props: {
   tabs: Tab[]
   setTabs: any
@@ -29,7 +29,7 @@ export default function TabBar(props: {
     props.setSelectedTab(id)
   }
   const handleDeleteTab = async (tabId: number) => {
-    let newTab, newTabIndex
+    let newTab: Tab, newTabIndex: number
     if (tabId == props.selectedTab) {
       newTabIndex = -2
       if (props.tabs.length == 1) {
@@ -49,7 +49,7 @@ export default function TabBar(props: {
       newTab = props.tabs[newTabIndex]
     }
 
-    console.log('prev', newTabIndex)
+    // console.log('prev', newTabIndex)
     window.indexBridge?.deleteTab(() => {
       if (tabId == props.selectedTab) {
         console.log('switching tab to', newTabIndex)
@@ -58,15 +58,22 @@ export default function TabBar(props: {
     }, tabId)
   }
   useEffect(() => {
+    console.log('tab selected: ', props.selectedTab)
+  }, [props.selectedTab])
+  useEffect(() => {
     console.log('requesting tabs')
     window.indexBridge?.requestTabs((tabs: any) => {
-      console.log(tabs)
+      console.log('tabs: ', tabs, tabs[0].id)
       handleUpdateTabs(tabs)
-      handleTab(tabs[0].id)
+      props.setSelectedTab(tabs[0].id)
     })
     window.indexBridge?.watchTabs((event: any, tabs: any) => {
       // console.log('tabs', tabs)
       handleUpdateTabs(tabs)
+      if (props.selectedTab == -1) {
+        console.log('props is -1', props.selectedTab)
+        // props.setSelectedTab(tabs[0].id)
+      }
     })
   }, [])
   const handleNewTab = async () => {
@@ -82,6 +89,15 @@ export default function TabBar(props: {
     tabs.forEach((tab) => {
       if (tab.favicon != '') {
         newFavicons[`${tab.id}`] = tab.favicon
+      }
+      if (tab.url.includes('6713de00-4386-4a9f-aeb9-0949b3e71eb7')) {
+        const hashIndex = tab.url.indexOf('#')
+        const hashString = hashIndex !== -1 ? tab.url.slice(hashIndex) : ''
+        const queryParams = new URLSearchParams(hashString.substring(1))
+        let decodedUrl = decode(queryParams.get('url') ?? '')
+        decodedUrl = Base64.decode(decodedUrl)
+        tab.url = decodedUrl
+        tab.favicon = 'WARNING'
       }
     })
     setFavicons(newFavicons)

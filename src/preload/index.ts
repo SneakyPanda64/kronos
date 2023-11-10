@@ -25,6 +25,26 @@ let indexBridge = {
     })
     ipcRenderer.send('delete-tab', tabId)
   },
+  navigation: {
+    goToUrl: (callback: any, tabId: number, url: string) => {
+      ipcRenderer.once('go-to-url-reply', (event, errorId: string) => {
+        callback(errorId)
+      })
+      ipcRenderer.send('go-to-url', tabId, url)
+    },
+    goBack: (callback: any, tabId: number) => {
+      ipcRenderer.once('go-back-reply', (event) => {
+        callback()
+      })
+      ipcRenderer.send('go-back', tabId)
+    },
+    goForward: (callback: any, tabId: number) => {
+      ipcRenderer.once('go-forward-reply', (event) => {
+        callback()
+      })
+      ipcRenderer.send('go-forward', tabId)
+    }
+  },
   window: {
     closeWindow: (windowId: number) => {
       ipcRenderer.send('close-window', windowId)
