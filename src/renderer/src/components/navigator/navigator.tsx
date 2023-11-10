@@ -5,7 +5,7 @@ import Actions from './actions'
 import Bar from './navigator/bar/bar'
 export default function Navigator() {
   const [selectedTab, setSelectedTab] = useState(4)
-  const [tabs, setTabs] = useState<Array<Tab>>([])
+  const [tabs, setTabs] = useState<any>({})
 
   return (
     <div className="bg-s-dark-gray">

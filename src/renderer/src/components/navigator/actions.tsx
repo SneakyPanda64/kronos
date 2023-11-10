@@ -4,13 +4,13 @@ import { RxCross2 } from 'react-icons/rx'
 
 export default function Actions() {
   const closeWindow = () => {
-    window.indexBridge?.window.closeWindow(234)
+    window.indexBridge?.window.closeWindow()
   }
   const minWindow = () => {
-    window.indexBridge?.window.minWindow(234)
+    window.indexBridge?.window.minWindow()
   }
   const toggleMaxWindow = () => {
-    window.indexBridge?.window.toggleMaxWindow(234)
+    window.indexBridge?.window.toggleMaxWindow()
   }
   return (
     <div className="flex absolute right-0 bg-s-dark-gray">

@@ -42,8 +42,8 @@ let indexBridge = {
   },
   navigation: {
     goToUrl: (callback: any, tabId: number, url: string) => {
-      ipcRenderer.once('go-to-url-reply', (event, errorId: string) => {
-        callback(errorId)
+      ipcRenderer.once('go-to-url-reply', (event) => {
+        callback()
       })
       ipcRenderer.send('go-to-url', tabId, url)
     },
@@ -61,14 +61,26 @@ let indexBridge = {
     }
   },
   window: {
-    closeWindow: (windowId: number) => {
-      ipcRenderer.send('close-window', windowId)
+    createWindow: (callback, tabIds: string[]) => {
+      ipcRenderer.once('create-window-reply', (event) => {
+        callback()
+      })
+      ipcRenderer.send('create-window', tabIds)
     },
-    minWindow: (windowId: number) => {
-      ipcRenderer.send('min-window', windowId)
+    closeWindow: () => {
+      ipcRenderer.send('close-window')
     },
-    toggleMaxWindow: (windowId: number) => {
-      ipcRenderer.send('toggle-max-window', windowId)
+    minWindow: () => {
+      ipcRenderer.send('min-window')
+    },
+    toggleMaxWindow: () => {
+      ipcRenderer.send('toggle-max-window')
+    },
+    whatIsMyId: (callback: any) => {
+      ipcRenderer.once('my-window-id-reply', (event) => {
+        callback()
+      })
+      ipcRenderer.send('my-window-id')
     }
   }
 }

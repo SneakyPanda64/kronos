@@ -19,22 +19,23 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
       console.log('refresh')
     }, props.selectedTab)
   }
-  useEffect(() => {
-    let currentTab = props.tabs[0]
-    props.tabs.forEach((tab) => {
-      if (tab.id == props.selectedTab) {
-        currentTab = tab
-      }
-    })
-    setTab(currentTab)
-  }, [props.tabs])
-  const [tab, setTab] = useState<Tab | undefined>(undefined)
-  return tab !== undefined ? (
+  // useEffect(() => {
+  //   let currentTab = props.tabs[0]
+  //   props.tabs.forEach((tab) => {
+  //     if (tab.id == props.selectedTab) {
+  //       currentTab = tab
+  //     }
+  //   })
+  //   setTab(currentTab)
+  // }, [props.tabs])
+  return props.tabs[props.selectedTab] ? (
     <div className="flex ml-4">
       <div
         className={
           `my-auto text-s-dark-blue  rounded-md p-2  ` +
-          (tab.navigation.canGoBack ? 'text-opacity-100 hover:text-white' : 'text-opacity-20')
+          (props.tabs[props.selectedTab].navigation.canGoBack
+            ? 'text-opacity-100 hover:text-white'
+            : 'text-opacity-20')
         }
         onClick={() => handleGoBack()}
       >
@@ -43,14 +44,20 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
       <div
         className={
           `my-auto text-s-dark-blue  rounded-md p-2  ` +
-          (tab.navigation.canGoForward ? 'text-opacity-100 hover:text-white' : 'text-opacity-20')
+          (props.tabs[props.selectedTab].navigation.canGoForward
+            ? 'text-opacity-100 hover:text-white'
+            : 'text-opacity-20')
         }
         onClick={() => handleGoForward()}
       >
         <BiRightArrow />
       </div>
       <div className={`my-auto text-s-dark-blue  rounded-md p-2 `} onClick={() => handleRefresh()}>
-        {tab.navigation.isLoading ? <RxCross2 size={22} /> : <BiRefresh size={22} />}
+        {props.tabs[props.selectedTab].navigation.isLoading ? (
+          <RxCross2 size={22} />
+        ) : (
+          <BiRefresh size={22} />
+        )}
       </div>
     </div>
   ) : (

@@ -5,6 +5,7 @@ import '../assets/index.css'
 import { errors } from './errors.json'
 import { decode } from 'url-safe-base64'
 import { Base64 } from 'js-base64'
+import { Helmet } from 'react-helmet'
 export default function ErrorPage() {
   const [searchParams] = useSearchParams()
   console.log(searchParams) // ▶ URLSearchParams {}
@@ -26,6 +27,9 @@ export default function ErrorPage() {
   const errorComponent = (error) => {
     return (
       <div className="flex h-screen w-screen text-xl text-white font-normal relative p-8">
+        <Helmet>
+          <link rel="icon" href="./src/assets/error.png" />
+        </Helmet>
         <div className="m-auto justify-center items-center ">
           <h1 className="text-4xl pb-6 font-thin">{parseText(error.title)}</h1>
           <h2 className="text-xl pb-2">{parseText(error.subtitle ?? '')}</h2>

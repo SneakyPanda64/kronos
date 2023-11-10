@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   const getURL = () => {
-    const newTabs = props.tabs.filter((tab) => tab.id === props.selectedTab)
-    if (newTabs.length == 0) {
+    const tab = props.tabs[props.selectedTab]
+    if (props.tabs.length == 0) {
       return ''
     }
-    if (newTabs[0] === undefined) {
+    if (tab === undefined) {
       return ''
     }
-    return newTabs[0].url
+    return tab.url
   }
   const searchRef = useRef(null)
   useEffect(() => {

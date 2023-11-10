@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
 import {
   createHeader,
   createTab,
@@ -13,93 +12,9 @@ import {
   refreshTab,
   selectTab
 } from './tab'
-import { deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
+import { createWindow, deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
 import { goToUrl, resolveUrl } from './url'
-import { findViewById, router } from './util'
-async function createWindow(): Promise<void> {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 600,
-    height: 600,
-    minHeight: 200,
-    minWidth: 500,
-    show: false,
-    // useContentSize: true,
-    autoHideMenuBar: true,
-    titleBarStyle: 'hidden',
-    frame: false,
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
-      webSecurity: false
-    }
-  })
-
-  await createHeader(mainWindow)
-
-  let tabId = await createTab(mainWindow)
-  await selectTab(mainWindow, tabId)
-  ipcMain.on('request-tabs', (event) => {
-    const tabs = getTabs(mainWindow) // Assuming you have a function that retrieves the tabs as an array, named getTabs()
-    event.reply('tabs-reply', tabs)
-  })
-  ipcMain.on('select-tab', (event, tabId) => {
-    console.log('selecting tabid: ', tabId)
-    selectTab(mainWindow, tabId)
-  })
-  ipcMain.on('new-tab', async (event) => {
-    let tabId = await createTab(mainWindow)
-    event.reply('new-tab-reply', tabId)
-    await selectTab(mainWindow, tabId)
-  })
-  ipcMain.on('delete-tab', async (event, tabId: number) => {
-    await deleteTab(mainWindow, tabId)
-    event.reply('delete-tab-reply')
-  })
-  ipcMain.on('refresh-tab', async (event, tabId: number) => {
-    await refreshTab(mainWindow, tabId)
-    event.reply('refresh-tab-reply')
-  })
-  ipcMain.on('close-window', async (event, windowId: number) => {
-    deleteWindow(mainWindow, windowId)
-  })
-  ipcMain.on('min-window', async (event, windowId: number) => {
-    minimiseWindow(mainWindow, windowId)
-  })
-  ipcMain.on('toggle-max-window', async (event, windowId: number) => {
-    toggleMaximiseWindow(mainWindow, windowId)
-  })
-  ipcMain.on('go-to-url', async (event, tabId: number, url: string) => {
-    await goToUrl(mainWindow, tabId, url)
-    event.reply('go-to-url-reply', '')
-  })
-  ipcMain.on('go-back', async (event, tabId: number) => {
-    await goBack(mainWindow, tabId)
-    event.reply('go-back-reply')
-  })
-  ipcMain.on('go-forward', async (event, tabId: number) => {
-    await goForward(mainWindow, tabId)
-    event.reply('go-forward-reply')
-  })
-  ipcMain.on('focus-search', async (event) => {
-    console.log('FOCUSING SEARCH21321312!')
-    await focusSearch(mainWindow)
-    event.reply('focus-search-reply')
-  })
-  mainWindow.show()
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-  //   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  // } else {
-  //   mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  // }
-}
+import { getViewById, router } from './util'
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -115,12 +30,101 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createWindow()
+  app.on('browser-window-created', (event, window) => {
+    console.log('WINDOW CREATED ID: ', window.id)
+  })
+
+  ipcMain.on('create-window', async (event, tabIds: string[]) => {
+    console.log('creating new window')
+    await createWindow(tabIds)
+  })
+
+  ipcMain.on('request-tabs', (event) => {
+    console.log('')
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win === null) return
+    console.log('REQUESTING TABS FROM ID: ', win.webContents.id, event.sender.id)
+    const tabs = getTabs(win.id) // Assuming you have a function that retrieves the tabs as an array, named getTabs()
+
+    event.reply('tabs-reply', tabs)
+  })
+  ipcMain.on('select-tab', (event, tabId) => {
+    console.log('selecting tabid: ', tabId)
+    selectTab(tabId)
+  })
+  ipcMain.on('new-tab', async (event) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win === null) return
+    let tabId = await createTab(win.id)
+    event.reply('new-tab-reply', tabId)
+    await selectTab(tabId!)
+    focusSearch(win.id)
+  })
+  ipcMain.on('delete-tab', async (event, tabId: number) => {
+    await deleteTab(tabId)
+    event.reply('delete-tab-reply')
+  })
+  ipcMain.on('refresh-tab', async (event, tabId: number) => {
+    await refreshTab(tabId)
+    event.reply('refresh-tab-reply')
+  })
+  ipcMain.on('close-window', async (event) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win === null) return
+    deleteWindow(win.id)
+  })
+  ipcMain.on('min-window', async (event) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win === null) return
+    minimiseWindow(win.id)
+  })
+  ipcMain.on('toggle-max-window', async (event, windowId: number) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win === null) return
+    toggleMaximiseWindow(win.id)
+  })
+  ipcMain.on('go-to-url', async (event, tabId: number, url: string) => {
+    console.log('going to url!', url)
+    await goToUrl(tabId, url)
+    event.reply('go-to-url-reply')
+  })
+  ipcMain.on('go-back', async (event, tabId: number) => {
+    await goBack(tabId)
+    event.reply('go-back-reply')
+  })
+  ipcMain.on('go-forward', async (event, tabId: number) => {
+    await goForward(tabId)
+    event.reply('go-forward-reply')
+  })
+  ipcMain.on('focus-search', async (event) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win == null) return
+    await focusSearch(win.id)
+    event.reply('focus-search-reply')
+  })
+  ipcMain.on('my-window-id', async (event) => {
+    event.reply('my-window-id-reply', event.sender.id)
+  })
+
+  createWindow([])
+  // createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow([])
   })
 })
 

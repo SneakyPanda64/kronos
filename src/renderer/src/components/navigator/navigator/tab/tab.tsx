@@ -4,6 +4,8 @@ import TabButton from './tab_button.tsx'
 import { IoMdAdd } from 'react-icons/io'
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
 import { decode, encode } from 'js-base64'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+
 export default function TabBar(props: {
   tabs: Tab[]
   setTabs: any
@@ -11,7 +13,9 @@ export default function TabBar(props: {
   setSelectedTab: any
 }) {
   const [favicons, setFavicons] = useState<any>({})
-
+  // const [currentTabs, setCurrentTabs] = useState<Tab[]>([])
+  const [posMap, setPosMap] = useState<Array<number>>([])
+  const [filter, setFilter] = useState<any>(null)
   const newTabButton = () => {
     return (
       <div
@@ -31,12 +35,12 @@ export default function TabBar(props: {
     let newTab: Tab, newTabIndex: number
     if (tabId == props.selectedTab) {
       newTabIndex = -2
-      if (props.tabs.length == 1) {
-        window.indexBridge?.window.closeWindow(324)
+      if (Object.keys(props.tabs).length == 1) {
+        window.indexBridge?.window.closeWindow()
       } else {
-        props.tabs.forEach((tab, index) => {
-          if (tab.id == tabId) {
-            if (props.tabs.length < index + 2) {
+        Object.keys(props.tabs).forEach((key, index) => {
+          if (key == `${tabId}`) {
+            if (Object.keys(props.tabs).length < index + 2) {
               newTabIndex = index - 1
             } else {
               newTabIndex = index + 1
@@ -47,8 +51,6 @@ export default function TabBar(props: {
 
       newTab = props.tabs[newTabIndex]
     }
-
-    // console.log('prev', newTabIndex)
     window.indexBridge?.deleteTab(() => {
       if (tabId == props.selectedTab) {
         console.log('switching tab to', newTabIndex)
@@ -85,6 +87,9 @@ export default function TabBar(props: {
 
   const handleUpdateTabs = (tabs: Tab[]) => {
     let newFavicons = favicons
+    // let newCurrentTabs = currentTabs
+    let newPosMap: number[] = posMap
+    let newTabList = {}
     tabs.forEach((tab) => {
       if (tab.favicon != '') {
         newFavicons[`${tab.id}`] = tab.favicon
@@ -99,10 +104,18 @@ export default function TabBar(props: {
         tab.url = decodedUrl
         tab.favicon = 'WARNING'
       }
+      newTabList[tab.id] = tab
+      if (!posMap.includes(tab.id)) {
+        newPosMap.push(tab.id)
+      }
+
+      // if (newCurrentTabs.includes(tab))
     })
     setFavicons(newFavicons)
-    props.setTabs(tabs)
+    setPosMap(newPosMap)
+    props.setTabs(newTabList)
   }
+
   const containerRef = useRef(null)
   const [isOverflow, setIsOverflow] = useState(false)
   const scrollOffset = (offset: number) => {
@@ -125,7 +138,25 @@ export default function TabBar(props: {
       )
     } catch (e) {}
   }, [props.tabs])
-
+  function handleOnDragEnd(result) {
+    if (!result.destination) {
+      window.indexBridge?.window.createWindow(() => {
+        console.log('created')
+      }, [])
+    } else {
+      const items = posMap
+      const [reorderedItem] = items.splice(result.source.index, 1)
+      items.splice(result.destination.index, 0, reorderedItem)
+      console.log(posMap, items)
+    }
+  }
+  // useEffect(() => {
+  //   let items = props.tabs
+  //   if (filter != null) {
+  //     const [reorderedItem] = items.splice(filter.source.index, 1)
+  //     items.splice(filter.destination.index, 0, reorderedItem)
+  //   }
+  // }, [props.tabs])
   return (
     <div className="flex h-[50vh]">
       {isOverflow ? (
@@ -143,18 +174,60 @@ export default function TabBar(props: {
 
       <div ref={containerRef} className=" overflow-x-hidden  w-[70vw] overflow-y-hidden flex">
         <div className="flex">
-          {props.tabs.map((item: Tab, index: number) =>
-            TabButton({
-              tab: item,
-              favicons: favicons,
-              key: index,
-              selectedTab: props.selectedTab,
-              setSelectedTab: props.setSelectedTab,
-              handleTab: handleTab,
-              handleDeleteTab: handleDeleteTab
-            })
-          )}
-
+          <DragDropContext direction="horizontal" onDragEnd={handleOnDragEnd}>
+            <Droppable direction="horizontal" droppableId="characters">
+              {
+                (provided) => (
+                  <ul
+                    className="characters flex"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {posMap.map((id, index) => {
+                      let item = props.tabs[id]
+                      if (item == undefined) return
+                      // let id = posMap[index]
+                      console.log('ID', id)
+                      // let id = `${item.id}`
+                      return (
+                        <Draggable key={id} draggableId={`${id}`} index={index}>
+                          {(provided) => (
+                            <li
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              {TabButton({
+                                tab: item,
+                                favicons: favicons,
+                                key: index,
+                                selectedTab: props.selectedTab,
+                                setSelectedTab: props.setSelectedTab,
+                                handleTab: handleTab,
+                                handleDeleteTab: handleDeleteTab
+                              })}
+                            </li>
+                          )}
+                        </Draggable>
+                      )
+                    })}
+                    {provided.placeholder}
+                  </ul>
+                )
+                // props.tabs.map((item: Tab, index: number) =>
+                //   TabButton({
+                //     tab: item,
+                //     favicons: favicons,
+                //     key: index,
+                //     selectedTab: props.selectedTab,
+                //     setSelectedTab: props.setSelectedTab,
+                //     handleTab: handleTab,
+                //     handleDeleteTab: handleDeleteTab
+                //   })
+                // )
+              }
+            </Droppable>
+          </DragDropContext>
           {!isOverflow ? (
             <div className="">{newTabButton()}</div>
           ) : (

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { ReactSVG } from 'react-svg'
 import googleSvg from '../assets/google.svg'
+import { Helmet } from 'react-helmet'
 
 export default function SearchPage() {
   const handleFocus = (e) => {
@@ -9,8 +10,15 @@ export default function SearchPage() {
       console.log('focused')
     })
   }
+  useEffect(() => {
+    document.title = 'New Tab'
+  })
   return (
     <div className="flex w-screen h-screen select-none cursor-text">
+      <Helmet>
+        <link rel="icon" href="./src/assets/google.png" />
+      </Helmet>
+      <link rel="icon" href="./src/assets/google.png" />
       <div className="mx-auto pt-40 text-center justify-center w-3/4 md:w-1/2 lg:w-1/3">
         <h1 className="text-6xl pb-12">Amenoi</h1>
         <div
