@@ -3,6 +3,7 @@ import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { findViewById, getFavicon, router } from './util'
 import { is } from '@electron-toolkit/utils'
+import { encode } from 'js-base64'
 
 const NAVIGATOR_HEIGHT = 80
 const WINDOW_WIDTH = 600
@@ -30,8 +31,12 @@ export async function deleteTab(win: BrowserWindow, tabId: number) {
   }
 }
 
-export async function createTab(win: BrowserWindow, url: string) {
-  const view = new BrowserView()
+export async function createTab(win: BrowserWindow, url = '') {
+  const view = new BrowserView({
+    webPreferences: {
+      preload: path.join(__dirname, '../preload/index.js')
+    }
+  })
   win.addBrowserView(view)
   view.setBounds({
     x: 0,
@@ -40,10 +45,18 @@ export async function createTab(win: BrowserWindow, url: string) {
     height: 0
   })
   view.setAutoResize({ width: false, height: false })
-
+  view.webContents.openDevTools({ mode: 'detach' })
   const header = findViewById(win, 2)
   if (header != null) {
     view.webContents.on('page-title-updated', () => {
+      const tabs = getTabs(win)
+      header.webContents.send('tabs-updated', tabs)
+    })
+    view.webContents.on('did-start-loading', () => {
+      const tabs = getTabs(win)
+      header.webContents.send('tabs-updated', tabs)
+    })
+    view.webContents.on('did-stop-loading', () => {
       const tabs = getTabs(win)
       header.webContents.send('tabs-updated', tabs)
     })
@@ -58,7 +71,15 @@ export async function createTab(win: BrowserWindow, url: string) {
       header.webContents.send('tabs-updated', newTabs)
     })
   }
-  await view.webContents.loadURL(url)
+  if (url === '') {
+    let urlHash = encode('‎', true)
+    console.log(urlHash)
+    await router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
+    focusSearch(win)
+  } else {
+    console.log('loading url')
+    await view.webContents.loadURL(url)
+  }
 
   return view.webContents.id
 }
@@ -68,7 +89,12 @@ export function getTabs(win: BrowserWindow, favicon = '') {
     id: number
     title: string
     url: string
-    favicon: string | undefined
+    favicon: string
+    navigation: {
+      isLoading: boolean
+      canGoBack: boolean
+      canGoForward: boolean
+    }
   }[] = []
   win.getBrowserViews().forEach((elem) => {
     if (elem.webContents.id === 2) return
@@ -76,7 +102,12 @@ export function getTabs(win: BrowserWindow, favicon = '') {
       id: elem.webContents.id,
       title: elem.webContents.getTitle() ?? 'no title',
       url: elem.webContents.getURL(),
-      favicon: ''
+      favicon: '',
+      navigation: {
+        isLoading: elem.webContents.isLoading(),
+        canGoBack: elem.webContents.canGoBack(),
+        canGoForward: elem.webContents.canGoForward()
+      }
     }
     if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
       tab.url = ''
@@ -136,6 +167,20 @@ export async function goForward(win: BrowserWindow, tabId: number) {
   }
 }
 
+export async function refreshTab(win: BrowserWindow, tabId: number) {
+  let view = findViewById(win, tabId)
+  if (view === null) return
+  view.webContents.reload()
+}
+
+export async function focusSearch(win: BrowserWindow) {
+  console.log('FOCUSING SEARCH!')
+  const header = findViewById(win, 2)
+  if (header == null) return
+  header.webContents.focus()
+  header.webContents.send('focusing-search')
+}
+
 export async function createHeader(win: BrowserWindow) {
   const view = new BrowserView({
     webPreferences: {
@@ -154,8 +199,23 @@ export async function createHeader(win: BrowserWindow) {
   // } else {
   //   await view.webContents.loadURL('file://' + path.join(__dirname, '../renderer/index.html'))
   // }
-  win.on('leave-full-screen', () => {
+  win.on('unmaximize', () => {
     console.log('left full screen')
+    view.setBounds({
+      width: win.getSize()[0],
+      height: view.getBounds().height,
+      x: 0,
+      y: 0
+    })
+  })
+  win.on('maximize', () => {
+    console.log('entered full screen')
+    view.setBounds({
+      width: win.getSize()[0] - 12,
+      height: view.getBounds().height,
+      x: 0,
+      y: 0
+    })
   })
   view.webContents.closeDevTools()
   view.webContents.openDevTools({ mode: 'detach' })

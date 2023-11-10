@@ -6,6 +6,7 @@ import { Tab, Favicon } from './interfaces.ts'
 import Navigator from './components/navigator/navigator.tsx'
 import TabBar from './components/navigator/navigator/tab/tab.tsx'
 import ErrorPage from './pages/error.tsx'
+import SearchPage from './pages/search.tsx'
 // import { ipcRenderer, ipcMain } from 'electron'; // Use `require` here
 function Main() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Routes>
         <Route path="/" Component={Main} />
         <Route path="/error" Component={ErrorPage} />
+        <Route path="/search" Component={SearchPage} />
       </Routes>
     </HashRouter>
   )

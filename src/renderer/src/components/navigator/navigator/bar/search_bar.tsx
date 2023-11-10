@@ -1,5 +1,5 @@
 import { Tab } from '@renderer/interfaces'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   const getURL = () => {
@@ -12,6 +12,20 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
     }
     return newTabs[0].url
   }
+  const searchRef = useRef(null)
+  useEffect(() => {
+    document.title = 'New Tab'
+    window.indexBridge?.header.onFocusSearch(() => {
+      // console.log('tabs', tabs)
+      console.log('FOCUS NOW!', searchRef.current)
+      if (searchRef.current != null) {
+        ;(searchRef.current as any).focus()
+        setIsFocused(true)
+        setIsSelected(true)
+      }
+    })
+  }, [])
+
   useEffect(() => {
     let newUrl = getURL()
     if (newUrl !== url && newUrl != '') {
@@ -30,9 +44,9 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   const [url, setUrl] = useState(getURL())
   const [isSelected, setIsSelected] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-
   const urlComponent = (url: string) => {
     let protocol = url.split('://')[0] + '://'
+    if (url.split('://').length < 2) protocol = ''
     let path = url.replace(protocol, '')
     let domain = path.split('/')[0]
     path = path.replace(domain, '')
@@ -46,33 +60,38 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   }
   return (
     <div className="my-auto ml-4 ">
-      {!isSelected ? (
-        <div
-          onMouseEnter={() => setIsSelected(true)}
-          className="w-[50vw] bg-s-dark-gray px-4 py-1 whitespace-nowrap rounded-lg text-white border-transparent focus:border-transparent focus:ring-0 outline-none"
-        >
-          {urlComponent(url)}
-        </div>
-      ) : (
-        <input
-          onMouseLeave={() => (!isFocused ? setIsSelected(false) : null)}
-          onChange={(e) => setUrl(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false)
-            setIsSelected(false)
-          }}
-          autoCorrect="off"
-          onKeyDown={(e) => {
-            if (e.key == 'Enter') {
-              goToUrl()
-              e.currentTarget.blur()
-            }
-          }}
-          className="w-[50vw] bg-s-dark-gray px-4 py-1 rounded-lg text-white border-transparent focus:border-transparent focus:ring-0 outline-none"
-          value={url}
-        />
-      )}
+      <div
+        onMouseEnter={() => setIsSelected(true)}
+        className={
+          `w-[50vw] select-none bg-s-dark-gray px-4 py-1 whitespace-nowrap rounded-lg text-white border-transparent focus:border-transparent focus:ring-0 outline-none ` +
+          (!isSelected && url.length != 0 ? 'block' : 'hidden')
+        }
+      >
+        {urlComponent(url)}
+      </div>
+      <input
+        ref={searchRef}
+        onMouseLeave={() => (!isFocused ? setIsSelected(false) : null)}
+        onChange={(e) => setUrl(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false)
+          setIsSelected(false)
+        }}
+        autoCorrect="off"
+        autoCapitalize="off"
+        onKeyDown={(e) => {
+          if (e.key == 'Enter') {
+            goToUrl()
+            e.currentTarget.blur()
+          }
+        }}
+        className={
+          `w-[50vw] bg-s-dark-gray px-4 py-1 rounded-lg text-white border-transparent focus:border-transparent focus:ring-0 outline-none ` +
+          (!isSelected && url.length != 0 ? 'hidden' : 'block')
+        }
+        value={url}
+      />
     </div>
   )
 }

@@ -25,6 +25,21 @@ let indexBridge = {
     })
     ipcRenderer.send('delete-tab', tabId)
   },
+  refreshTab: (callback: any, tabId: number) => {
+    ipcRenderer.once('refresh-tab-reply', (event) => {
+      callback()
+    })
+    ipcRenderer.send('refresh-tab', tabId)
+  },
+  header: {
+    focusSearch: (callback: any) => {
+      ipcRenderer.once('focus-search-reply', (event) => {
+        callback()
+      })
+      ipcRenderer.send('focus-search')
+    },
+    onFocusSearch: (callback: any) => ipcRenderer.on('focusing-search', callback)
+  },
   navigation: {
     goToUrl: (callback: any, tabId: number, url: string) => {
       ipcRenderer.once('go-to-url-reply', (event, errorId: string) => {

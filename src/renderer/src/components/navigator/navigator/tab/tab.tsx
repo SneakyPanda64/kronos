@@ -3,8 +3,7 @@ import { Tab } from '../../../../interfaces.ts'
 import TabButton from './tab_button.tsx'
 import { IoMdAdd } from 'react-icons/io'
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
-import { Base64 } from 'js-base64'
-import { decode } from 'url-safe-base64'
+import { decode, encode } from 'js-base64'
 export default function TabBar(props: {
   tabs: Tab[]
   setTabs: any
@@ -67,7 +66,7 @@ export default function TabBar(props: {
       handleUpdateTabs(tabs)
       props.setSelectedTab(tabs[0].id)
     })
-    window.indexBridge?.watchTabs((event: any, tabs: any) => {
+    window.indexBridge?.watchTabs((_: any, tabs: any) => {
       // console.log('tabs', tabs)
       handleUpdateTabs(tabs)
       if (props.selectedTab == -1) {
@@ -94,8 +93,9 @@ export default function TabBar(props: {
         const hashIndex = tab.url.indexOf('#')
         const hashString = hashIndex !== -1 ? tab.url.slice(hashIndex) : ''
         const queryParams = new URLSearchParams(hashString.substring(1))
+        console.log('has', queryParams.get('url'))
+
         let decodedUrl = decode(queryParams.get('url') ?? '')
-        decodedUrl = Base64.decode(decodedUrl)
         tab.url = decodedUrl
         tab.favicon = 'WARNING'
       }
@@ -131,7 +131,7 @@ export default function TabBar(props: {
       {isOverflow ? (
         <div
           className="my-auto mr-2 hidden md:block"
-          onClick={(e) => {
+          onClick={() => {
             ;(containerRef.current! as any).scrollLeft -= 100
           }}
         >

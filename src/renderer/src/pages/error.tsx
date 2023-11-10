@@ -25,7 +25,7 @@ export default function ErrorPage() {
   }
   const errorComponent = (error) => {
     return (
-      <div className="flex h-screen w-screen text-xl text-white font-normal relative">
+      <div className="flex h-screen w-screen text-xl text-white font-normal relative p-8">
         <div className="m-auto justify-center items-center ">
           <h1 className="text-4xl pb-6 font-thin">{parseText(error.title)}</h1>
           <h2 className="text-xl pb-2">{parseText(error.subtitle ?? '')}</h2>
@@ -33,8 +33,10 @@ export default function ErrorPage() {
             <div>
               <h1>{parseText(error.support.title)}</h1>
               <ul className="list-disc ml-12 pt-4">
-                {error.support.list.map((title: string) => (
-                  <li className="font-light text-lg">{parseText(title)}</li>
+                {error.support.list.map((title: string, index: number) => (
+                  <li key={index} className="font-light text-lg">
+                    {parseText(title)}
+                  </li>
                 ))}
               </ul>
             </div>

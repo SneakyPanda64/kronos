@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import TabBar from './navigator/tab/tab'
 import { Tab } from '@renderer/interfaces'
 import Actions from './actions'

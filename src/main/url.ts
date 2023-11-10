@@ -23,9 +23,17 @@ export async function goToUrl(win: BrowserWindow, tabId: number, url: string) {
   let view = findViewById(win, tabId)
   if (view === null) return
   const protocols = ['http', 'https']
+  const regex = /^(\w+\.\w+(\.\w+)*)/
+  url = url.replaceAll('‎', '')
+  const match = regex.exec(url)
   let errorId: string | undefined = ''
   if (!protocols.includes(url.split('://')[0])) {
-    url = `https://google.com/search?q=${url}`
+    if (match) {
+      url = `https://${url}`
+      errorId = await resolveUrl(url)
+    } else {
+      url = `https://google.com/search?q=${url}`
+    }
   } else {
     errorId = await resolveUrl(url)
   }

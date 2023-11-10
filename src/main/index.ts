@@ -2,7 +2,17 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { createHeader, createTab, deleteTab, getTabs, goBack, goForward, selectTab } from './tab'
+import {
+  createHeader,
+  createTab,
+  deleteTab,
+  focusSearch,
+  getTabs,
+  goBack,
+  goForward,
+  refreshTab,
+  selectTab
+} from './tab'
 import { deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
 import { goToUrl, resolveUrl } from './url'
 import { findViewById, router } from './util'
@@ -26,12 +36,8 @@ async function createWindow(): Promise<void> {
 
   await createHeader(mainWindow)
 
-  // await createTab(mainWindow, 'https://github.com/electron/forge/issues/2560')
-  let tabId = await createTab(mainWindow, 'https://google.com/')
+  let tabId = await createTab(mainWindow)
   await selectTab(mainWindow, tabId)
-  // mainWindow.on('ready-to-show', () => {
-
-  // })
   ipcMain.on('request-tabs', (event) => {
     const tabs = getTabs(mainWindow) // Assuming you have a function that retrieves the tabs as an array, named getTabs()
     event.reply('tabs-reply', tabs)
@@ -41,13 +47,17 @@ async function createWindow(): Promise<void> {
     selectTab(mainWindow, tabId)
   })
   ipcMain.on('new-tab', async (event) => {
-    let tabId = await createTab(mainWindow, 'https://google.com/')
+    let tabId = await createTab(mainWindow)
     event.reply('new-tab-reply', tabId)
     await selectTab(mainWindow, tabId)
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
     await deleteTab(mainWindow, tabId)
     event.reply('delete-tab-reply')
+  })
+  ipcMain.on('refresh-tab', async (event, tabId: number) => {
+    await refreshTab(mainWindow, tabId)
+    event.reply('refresh-tab-reply')
   })
   ipcMain.on('close-window', async (event, windowId: number) => {
     deleteWindow(mainWindow, windowId)
@@ -69,6 +79,11 @@ async function createWindow(): Promise<void> {
   ipcMain.on('go-forward', async (event, tabId: number) => {
     await goForward(mainWindow, tabId)
     event.reply('go-forward-reply')
+  })
+  ipcMain.on('focus-search', async (event) => {
+    console.log('FOCUSING SEARCH21321312!')
+    await focusSearch(mainWindow)
+    event.reply('focus-search-reply')
   })
   mainWindow.show()
 
