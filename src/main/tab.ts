@@ -1,8 +1,7 @@
 import { BrowserView, BrowserWindow } from 'electron'
 // import { resolveHtmlPath } from './util'
 import path from 'path'
-import { getViewById, getFavicon, router } from './util'
-import { is } from '@electron-toolkit/utils'
+import { getViewById, router } from './util'
 import { encode } from 'js-base64'
 
 const NAVIGATOR_HEIGHT = 80
@@ -72,7 +71,7 @@ export async function createTab(windowId: number, url = '') {
       const tabs = getTabs(windowId)
       header.webContents.send('tabs-updated', tabs)
     })
-    view.webContents.on('page-favicon-updated', async (event, favicons) => {
+    view.webContents.on('page-favicon-updated', async (_, favicons) => {
       const tabs = getTabs(windowId)
       let newTabs = tabs
       newTabs.forEach((tab) => {
@@ -209,11 +208,6 @@ export async function createHeader(win: BrowserWindow) {
   view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
   view.setAutoResize({ width: true, height: false })
   await router(view, '')
-  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-  //   await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  // } else {
-  //   await view.webContents.loadURL('file://' + path.join(__dirname, '../renderer/index.html'))
-  // }
   win.on('unmaximize', () => {
     console.log('left full screen')
     view.setBounds({

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import TabBar from './navigator/tab/tab'
-import { Tab } from '@renderer/interfaces'
 import Actions from './actions'
 import Bar from './navigator/bar/bar'
 export default function Navigator() {

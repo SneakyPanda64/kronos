@@ -3,7 +3,7 @@ import { Tab } from '../../../../interfaces.ts'
 import TabButton from './tab_button.tsx'
 import { IoMdAdd } from 'react-icons/io'
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
-import { decode, encode } from 'js-base64'
+import { decode } from 'js-base64'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
 export default function TabBar(props: {
@@ -15,7 +15,6 @@ export default function TabBar(props: {
   const [favicons, setFavicons] = useState<any>({})
   // const [currentTabs, setCurrentTabs] = useState<Tab[]>([])
   const [posMap, setPosMap] = useState<Array<number>>([])
-  const [filter, setFilter] = useState<any>(null)
   const newTabButton = () => {
     return (
       <div
@@ -28,7 +27,7 @@ export default function TabBar(props: {
   }
 
   const handleTab = (id: number) => {
-    window.indexBridge?.selectTab(id)
+    window.indexBridge?.tabs.selectTab(id)
     props.setSelectedTab(id)
   }
   const handleDeleteTab = async (tabId: number) => {
@@ -51,7 +50,7 @@ export default function TabBar(props: {
 
       newTab = props.tabs[newTabIndex]
     }
-    window.indexBridge?.deleteTab(() => {
+    window.indexBridge?.tabs.deleteTab(() => {
       if (tabId == props.selectedTab) {
         console.log('switching tab to', newTabIndex)
         handleTab(newTab.id)
@@ -63,22 +62,20 @@ export default function TabBar(props: {
   }, [props.selectedTab])
   useEffect(() => {
     console.log('requesting tabs')
-    window.indexBridge?.requestTabs((tabs: any) => {
+    window.indexBridge?.tabs.requestTabs((tabs: any) => {
       console.log('tabs: ', tabs, tabs[0].id)
       handleUpdateTabs(tabs)
       props.setSelectedTab(tabs[0].id)
     })
-    window.indexBridge?.watchTabs((_: any, tabs: any) => {
-      // console.log('tabs', tabs)
+    window.indexBridge?.tabs.watchTabs((_: any, tabs: any) => {
       handleUpdateTabs(tabs)
       if (props.selectedTab == -1) {
-        console.log('props is -1', props.selectedTab)
         // props.setSelectedTab(tabs[0].id)
       }
     })
   }, [])
   const handleNewTab = async () => {
-    window.indexBridge?.newTab((tabId: number) => {
+    window.indexBridge?.tabs.newTab((tabId: number) => {
       console.log('new tab: ', tabId)
       props.setSelectedTab(tabId)
       scrollOffset(100000)
@@ -147,7 +144,6 @@ export default function TabBar(props: {
       const items = posMap
       const [reorderedItem] = items.splice(result.source.index, 1)
       items.splice(result.destination.index, 0, reorderedItem)
-      console.log(posMap, items)
     }
   }
   // useEffect(() => {

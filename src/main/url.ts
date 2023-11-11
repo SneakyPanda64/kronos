@@ -8,19 +8,16 @@ export async function resolveUrl(url: string) {
   try {
     res = await axios.get(url)
     return ''
-    // console.log(res)
   } catch (e: any) {
     if (e.response != undefined) {
       return ''
     }
-    // console.log('ERROR', ')
     return (e as AxiosError).code
   }
 }
 
 export async function goToUrl(tabId: number, url: string) {
   let view = getViewById(tabId)
-  console.log('GO TO', tabId)
   if (view === null) return
   const protocols = ['http', 'https']
   const regex = /^(\w+\.\w+(\.\w+)*)/

@@ -1,5 +1,4 @@
 import { BrowserWindow, shell } from 'electron'
-import { getViewById } from './util'
 import { createHeader, createTab, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 

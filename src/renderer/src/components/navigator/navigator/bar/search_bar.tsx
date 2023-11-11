@@ -16,8 +16,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   useEffect(() => {
     document.title = 'New Tab'
     window.indexBridge?.header.onFocusSearch(() => {
-      // console.log('tabs', tabs)
-      console.log('FOCUS NOW!', searchRef.current)
+      console.log('focus', searchRef.current)
       if (searchRef.current != null) {
         ;(searchRef.current as any).focus()
         setIsFocused(true)

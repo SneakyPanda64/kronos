@@ -17,16 +17,12 @@ export default function TabButton(props: {
     <div className="w-16 min-w-max flex" key={props.key}>
       <div
         onClick={(e) => {
-          e.stopPropagation() // Stop propagation here
+          e.stopPropagation()
           props.handleTab(props.tab.id)
-          // if ((e.currentTarget.scrollWidth ?? 0) > e.currentTarget.clientWidth) {
-          // (containerRef.current as any).scrollWidth ?? 0) > (containerRef.current as any).clientWidth
           e.currentTarget.scrollIntoView({ behavior: 'smooth' })
         }}
         className={`h-full text-sm hover:cursor-default`}
       >
-        {/* <button onClick={(e) => e.preventDefault()}> */}
-        {/* <img src={props.tab.favicon} /> */}
         <a
           data-tooltip-id="my-tooltip-data-html"
           data-tooltip-html={ReactDOMServer.renderToStaticMarkup(
@@ -92,7 +88,7 @@ export default function TabButton(props: {
                     className="my-auto ml-auto"
                     onClick={(e) => {
                       e.preventDefault()
-                      e.stopPropagation() // Stop propagation here
+                      e.stopPropagation()
                       props.handleDeleteTab(props.tab.id)
                     }}
                   >

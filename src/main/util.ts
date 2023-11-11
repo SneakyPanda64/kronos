@@ -1,18 +1,7 @@
 /* eslint import/prefer-default-export: off */
-import { URL } from 'url'
 import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
 import { is } from '@electron-toolkit/utils'
-
-// export function resolveHtmlPath(htmlFileName: string) {
-//   if (process.env.NODE_ENV === 'development') {
-//     const port = process.env.PORT || 1212;
-//     const url = new URL(`http://localhost:${port}`);
-//     url.pathname = htmlFileName;
-//     return url.href;
-//   }
-//   return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`;
-// }
 
 export async function getFavicon(browserView: BrowserView) {
   if (!(browserView instanceof BrowserView)) {
@@ -51,9 +40,6 @@ export function getViewById(id: number): BrowserView | null {
   }
   console.log(id, 'new found')
   return found
-  // let win = BrowserWindow.fromBrowserView(findViewById(event.sender.id))
-  // if (win === null) return
-  // await focusSearch(win)
 }
 
 export async function router(view: BrowserView, subPath: string) {

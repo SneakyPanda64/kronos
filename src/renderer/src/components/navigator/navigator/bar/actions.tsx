@@ -1,5 +1,4 @@
 import { Tab } from '@renderer/interfaces'
-import { useEffect, useState } from 'react'
 import { BiLeftArrow, BiRightArrow, BiRefresh } from 'react-icons/bi'
 import { RxCross2 } from 'react-icons/rx'
 
@@ -15,19 +14,10 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
     }, props.selectedTab)
   }
   const handleRefresh = () => {
-    window.indexBridge?.refreshTab(() => {
+    window.indexBridge?.tabs.refreshTab(() => {
       console.log('refresh')
     }, props.selectedTab)
   }
-  // useEffect(() => {
-  //   let currentTab = props.tabs[0]
-  //   props.tabs.forEach((tab) => {
-  //     if (tab.id == props.selectedTab) {
-  //       currentTab = tab
-  //     }
-  //   })
-  //   setTab(currentTab)
-  // }, [props.tabs])
   return props.tabs[props.selectedTab] ? (
     <div className="flex ml-4">
       <div
