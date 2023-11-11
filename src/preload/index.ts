@@ -21,7 +21,7 @@ let indexBridge = {
       ipcRenderer.send('new-tab')
     },
     deleteTab: (callback: any, tabId: number) => {
-      ipcRenderer.once('delete-tab-reply', (_) => {
+      ipcRenderer.once('delete-tab-reply', (event) => {
         callback()
       })
       ipcRenderer.send('delete-tab', tabId)
@@ -31,7 +31,14 @@ let indexBridge = {
         callback()
       })
       ipcRenderer.send('refresh-tab', tabId)
-    }
+    },
+    holdingTabs: (callback: any, tabIds: number[]) => {
+      ipcRenderer.once('holding-tabs-reply', (_) => {
+        callback()
+      })
+      ipcRenderer.send('holding-tabs', tabIds)
+    },
+    onHoldingTabs: (callback: any) => ipcRenderer.on('holding-tabs', callback)
   },
   header: {
     focusSearch: (callback: any) => {
@@ -63,11 +70,11 @@ let indexBridge = {
     }
   },
   window: {
-    createWindow: (callback, tabIds: string[]) => {
+    createWindow: (callback: any, tabIds: number[], onMouse = false, maximised = false) => {
       ipcRenderer.once('create-window-reply', (_) => {
         callback()
       })
-      ipcRenderer.send('create-window', tabIds)
+      ipcRenderer.send('create-window', tabIds, onMouse, maximised)
     },
     closeWindow: () => {
       ipcRenderer.send('close-window')
@@ -78,11 +85,11 @@ let indexBridge = {
     toggleMaxWindow: () => {
       ipcRenderer.send('toggle-max-window')
     },
-    whatIsMyId: (callback: any) => {
-      ipcRenderer.once('my-window-id-reply', (_) => {
+    moveWindow: (callback: any, position: { x: number; y: number }) => {
+      ipcRenderer.once('move-window-reply', (_) => {
         callback()
       })
-      ipcRenderer.send('my-window-id')
+      ipcRenderer.send('move-window', position)
     }
   }
 }

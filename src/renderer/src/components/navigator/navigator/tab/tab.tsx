@@ -26,8 +26,8 @@ export default function TabBar(props: {
     )
   }
 
-  const handleTab = (id: number) => {
-    window.indexBridge?.tabs.selectTab(id)
+  const handleTab = async (id: number) => {
+    await window.indexBridge?.tabs.selectTab(id)
     props.setSelectedTab(id)
   }
   const handleDeleteTab = async (tabId: number) => {
@@ -47,16 +47,22 @@ export default function TabBar(props: {
           }
         })
       }
-
-      newTab = props.tabs[newTabIndex]
+      let validPos: number[] = []
+      posMap.forEach((pos) => {
+        if (Object.keys(props.tabs).includes(`${pos}`)) {
+          validPos.push(pos)
+        }
+      })
+      newTab = props.tabs[validPos[newTabIndex]]
     }
     window.indexBridge?.tabs.deleteTab(() => {
       if (tabId == props.selectedTab) {
-        console.log('switching tab to', newTabIndex)
+        console.log('switching tab to', newTabIndex, props.tabs)
         handleTab(newTab.id)
       }
     }, tabId)
   }
+
   useEffect(() => {
     console.log('tab selected: ', props.selectedTab)
   }, [props.selectedTab])
@@ -69,8 +75,9 @@ export default function TabBar(props: {
     })
     window.indexBridge?.tabs.watchTabs((_: any, tabs: any) => {
       handleUpdateTabs(tabs)
+      console.log('tabs: ', tabs, tabs[0].id)
       if (props.selectedTab == -1) {
-        // props.setSelectedTab(tabs[0].id)
+        props.setSelectedTab(tabs[0].id)
       }
     })
   }, [])
@@ -137,22 +144,50 @@ export default function TabBar(props: {
   }, [props.tabs])
   function handleOnDragEnd(result) {
     if (!result.destination) {
-      window.indexBridge?.window.createWindow(() => {
-        console.log('created')
-      }, [])
+      console.log('attemp create window', result.draggableId)
+      if (Object.keys(props.tabs).length == 1) {
+        window.indexBridge?.window.moveWindow(() => {
+          console.log('moved window')
+        })
+      } else {
+        window.indexBridge?.window.createWindow(
+          () => {
+            console.log('created', result.draggableId, posMap)
+          },
+          [result.draggableId],
+          true
+        )
+        let newTabIndex = 0
+
+        if (props.selectedTab == result.draggableId) {
+          Object.keys(props.tabs).forEach((key, index) => {
+            if (key == `${result.draggableId}`) {
+              if (Object.keys(props.tabs).length < index + 2) {
+                newTabIndex = index - 1
+              } else {
+                newTabIndex = index + 1
+              }
+            }
+          })
+          console.log('NEW TAB INDEX!!!', newTabIndex)
+          let validPos: number[] = []
+          posMap.forEach((pos) => {
+            if (Object.keys(props.tabs).includes(`${pos}`)) {
+              validPos.push(pos)
+            }
+          })
+
+          let newTab = props.tabs[validPos[newTabIndex]]
+          window.indexBridge?.tabs.selectTab(newTab.id ?? props.tabs[0])
+          props.setSelectedTab(newTab.id ?? props.tabs[0])
+        }
+      }
     } else {
       const items = posMap
       const [reorderedItem] = items.splice(result.source.index, 1)
       items.splice(result.destination.index, 0, reorderedItem)
     }
   }
-  // useEffect(() => {
-  //   let items = props.tabs
-  //   if (filter != null) {
-  //     const [reorderedItem] = items.splice(filter.source.index, 1)
-  //     items.splice(filter.destination.index, 0, reorderedItem)
-  //   }
-  // }, [props.tabs])
   return (
     <div className="flex h-[50vh]">
       {isOverflow ? (
@@ -172,56 +207,40 @@ export default function TabBar(props: {
         <div className="flex">
           <DragDropContext direction="horizontal" onDragEnd={handleOnDragEnd}>
             <Droppable direction="horizontal" droppableId="characters">
-              {
-                (provided) => (
-                  <ul
-                    className="characters flex"
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                  >
-                    {posMap.map((id, index) => {
-                      let item = props.tabs[id]
-                      if (item == undefined) return
-                      // let id = posMap[index]
-                      console.log('ID', id)
-                      // let id = `${item.id}`
-                      return (
-                        <Draggable key={id} draggableId={`${id}`} index={index}>
-                          {(provided) => (
-                            <li
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              {TabButton({
-                                tab: item,
-                                favicons: favicons,
-                                key: index,
-                                selectedTab: props.selectedTab,
-                                setSelectedTab: props.setSelectedTab,
-                                handleTab: handleTab,
-                                handleDeleteTab: handleDeleteTab
-                              })}
-                            </li>
-                          )}
-                        </Draggable>
-                      )
-                    })}
-                    {provided.placeholder}
-                  </ul>
-                )
-                // props.tabs.map((item: Tab, index: number) =>
-                //   TabButton({
-                //     tab: item,
-                //     favicons: favicons,
-                //     key: index,
-                //     selectedTab: props.selectedTab,
-                //     setSelectedTab: props.setSelectedTab,
-                //     handleTab: handleTab,
-                //     handleDeleteTab: handleDeleteTab
-                //   })
-                // )
-              }
+              {(provided) => (
+                <ul className=" flex" {...provided.droppableProps} ref={provided.innerRef}>
+                  {posMap.map((id, index) => {
+                    let item = props.tabs[id]
+                    if (item == undefined) return
+                    // let id = posMap[index]
+                    console.log('ID', id)
+                    // let id = `${item.id}`
+                    return (
+                      <Draggable key={id} draggableId={`${id}`} index={index}>
+                        {(provided) => (
+                          <li
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={'outline-none ring-0'}
+                          >
+                            {TabButton({
+                              tab: item,
+                              favicons: favicons,
+                              key: index,
+                              selectedTab: props.selectedTab,
+                              setSelectedTab: props.setSelectedTab,
+                              handleTab: handleTab,
+                              handleDeleteTab: handleDeleteTab
+                            })}
+                          </li>
+                        )}
+                      </Draggable>
+                    )
+                  })}
+                  {provided.placeholder}
+                </ul>
+              )}
             </Droppable>
           </DragDropContext>
           {!isOverflow ? (

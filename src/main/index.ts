@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import {
   createTab,
@@ -10,7 +10,13 @@ import {
   refreshTab,
   selectTab
 } from './tab'
-import { createWindow, deleteWindow, minimiseWindow, toggleMaximiseWindow } from './window'
+import {
+  createWindow,
+  deleteWindow,
+  minimiseWindow,
+  moveWindow,
+  toggleMaximiseWindow
+} from './window'
 import { goToUrl } from './url'
 import { getViewById } from './util'
 
@@ -24,24 +30,37 @@ app.whenReady().then(() => {
     console.log('WINDOW CREATED ID: ', window.id)
   })
 
-  ipcMain.on('create-window', async (_, tabIds: string[]) => {
-    console.log('creating new window')
-    await createWindow(tabIds)
-  })
+  ipcMain.on(
+    'create-window',
+    async (event, tabIds: number[], onMouse = false, maximised = false) => {
+      console.log('creating new window')
+      let pos = {
+        x: 0,
+        y: 0
+      }
+      if (onMouse) {
+        const { x, y } = screen.getCursorScreenPoint()
+        pos.x = x - 100
+        pos.y = y - 100
+      }
+      await createWindow(tabIds, pos, maximised)
+      event.reply('create-window-reply')
+    }
+  )
 
-  ipcMain.on('request-tabs', (event) => {
+  ipcMain.on('request-tabs', async (event) => {
     console.log('requesting tabs')
     let view = getViewById(event.sender.id)
     if (view == null) return
     let win = BrowserWindow.fromBrowserView(view)
     if (win === null) return
-    const tabs = getTabs(win.id) // Assuming you have a function that retrieves the tabs as an array, named getTabs()
+    const tabs = await getTabs(win.id)
 
     event.reply('tabs-reply', tabs)
   })
-  ipcMain.on('select-tab', (_, tabId) => {
+  ipcMain.on('select-tab', async (_, tabId) => {
     console.log('selecting tabid: ', tabId)
-    selectTab(tabId)
+    await selectTab(tabId)
   })
   ipcMain.on('new-tab', async (event) => {
     let view = getViewById(event.sender.id)
@@ -55,6 +74,7 @@ app.whenReady().then(() => {
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
     await deleteTab(tabId)
+    console.log('DONE DELETING!!!')
     event.reply('delete-tab-reply')
   })
   ipcMain.on('refresh-tab', async (event, tabId: number) => {
@@ -103,14 +123,19 @@ app.whenReady().then(() => {
     await focusSearch(win.id)
     event.reply('focus-search-reply')
   })
-  ipcMain.on('my-window-id', async (event) => {
-    event.reply('my-window-id-reply', event.sender.id)
+  ipcMain.on('move-window', async (event, position: { x: number; y: number }) => {
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win == null) return
+    moveWindow(win.id, position)
+    event.reply('move-window-reply', event.sender.id)
   })
 
-  createWindow([])
+  createWindow([], { x: 0, y: 0 })
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow([])
+    if (BrowserWindow.getAllWindows().length === 0) createWindow([], { x: 0, y: 0 }, false)
   })
 })
 
