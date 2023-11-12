@@ -8,7 +8,7 @@ import { Base64 } from 'js-base64'
 import { Helmet } from 'react-helmet'
 export default function ErrorPage() {
   const [searchParams] = useSearchParams()
-  console.log(searchParams) // ▶ URLSearchParams {}
+  console.log(searchParams)
   let error = errors[searchParams.get('id') ?? 'DEFAULT'] ?? errors.DEFAULT
   console.log('ERROR', error)
   const parseText = (text: string): string => {
@@ -19,12 +19,12 @@ export default function ErrorPage() {
       URL: decodedUrl,
       ERROR_CODE: searchParams.get('id') ?? ''
     }
-    Object.keys(vars).forEach((key, index) => {
+    Object.keys(vars).forEach((key) => {
       newText = newText.replaceAll('{{' + key + '}}', vars[key])
     })
     return newText
   }
-  const errorComponent = (error) => {
+  const errorComponent = (error: any) => {
     return (
       <div className="flex h-screen w-screen text-xl text-white font-normal relative p-8">
         <Helmet>

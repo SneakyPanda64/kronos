@@ -42,7 +42,7 @@ export function getViewById(id: number): BrowserView | null {
   return found
 }
 
-export async function router(view: BrowserView, subPath: string) {
+export async function router(view: BrowserView | BrowserWindow, subPath: string) {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {})
   } else {

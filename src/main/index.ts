@@ -20,6 +20,8 @@ import {
 } from './window'
 import { goToUrl } from './url'
 import { getViewById } from './util'
+import { closeOverlay, openOverlay } from './overlay'
+import { getHeader } from './header'
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
@@ -71,6 +73,7 @@ app.whenReady().then(() => {
     await selectTab(tabId)
   })
   ipcMain.on('new-tab', async (event) => {
+    console.log('attempt NEW TAB')
     let view = getViewById(event.sender.id)
     if (view == null) return
     let win = BrowserWindow.fromBrowserView(view)
@@ -140,7 +143,31 @@ app.whenReady().then(() => {
     moveWindow(win.id, position)
     event.reply('move-window-reply', event.sender.id)
   })
-
+  ipcMain.on('open-overlay', async (event, type: string, position: { x: number; y: number }) => {
+    console.log('opening overlay!')
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let win = BrowserWindow.fromBrowserView(view)
+    if (win == null) return
+    await openOverlay(win, type, position)
+    event.reply('open-overlay-reply')
+  })
+  ipcMain.on('close-overlay', async (event) => {
+    // await closeOverlay()
+    console.log('attempt close!')
+    event.reply('close-overlay-reply')
+  })
+  ipcMain.on('proxy-header', async (event, channel: string) => {
+    console.log('recieved proxy on channel: ', channel)
+    let view = getViewById(event.sender.id)
+    if (view == null) return
+    let overlayWindow = BrowserWindow.fromId(view.webContents.id)
+    if (overlayWindow == null) return
+    let win = overlayWindow.getParentWindow()
+    if (win == null) return
+    let header = await getHeader(win)
+    header.webContents.send(channel)
+  })
   createWindow([], { x: 0, y: 0 })
 
   app.on('activate', function () {

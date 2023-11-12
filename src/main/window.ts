@@ -1,24 +1,14 @@
-import { BrowserView, BrowserWindow, shell, screen } from 'electron'
-import {
-  applyTabListeners,
-  createHeader,
-  createTab,
-  getHeader,
-  getTabs,
-  isTabHidden,
-  moveTabs,
-  selectTab,
-  showTab
-} from './tab'
+import { BrowserWindow, shell, screen } from 'electron'
+import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
-import { getViewById } from './util'
+import { createHeader } from './header'
+import { closeOverlay, isOverlay } from './overlay'
 
 export async function createWindow(
   tabIds: number[],
   position: { x: number; y: number },
   maximised = false
 ): Promise<void> {
-  // Create the browser window.
   console.log(position)
   const mainWindow = new BrowserWindow({
     width: 600,
@@ -28,7 +18,6 @@ export async function createWindow(
     x: position.x,
     y: position.y,
     show: false,
-    // useContentSize: true,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     frame: false,
@@ -48,15 +37,6 @@ export async function createWindow(
   }
 
   moveTabs(tabIds, mainWindow.id)
-
-  // console.log(
-  //   '_>>>> NEW WINDOW TAB',
-  //   mainWindow.id,
-  //   'has headerid',
-  //   await getHeader(mainWindow).webContents.id,
-  //   'IS HIDDEN',
-  //   isTabHidden(await getHeader(mainWindow).webContents.id)
-  // )
 
   mainWindow.show()
 
