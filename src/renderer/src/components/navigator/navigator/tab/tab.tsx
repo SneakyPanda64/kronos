@@ -80,6 +80,9 @@ export default function TabBar(props: {
         props.setSelectedTab(tabs[0].id)
       }
     })
+    window.indexBridge?.tabs.watchSelectedTab((_: any, tabId: number) => {
+      props.setSelectedTab(tabId)
+    })
   }, [])
   const handleNewTab = async () => {
     window.indexBridge?.tabs.newTab((tabId: number) => {
@@ -142,46 +145,54 @@ export default function TabBar(props: {
       )
     } catch (e) {}
   }, [props.tabs])
-  function handleOnDragEnd(result) {
+  async function handleOnDragEnd(result) {
     if (!result.destination) {
       console.log('attemp create window', result.draggableId)
-      if (Object.keys(props.tabs).length == 1) {
-        window.indexBridge?.window.moveWindow(() => {
-          console.log('moved window')
-        })
-      } else {
-        window.indexBridge?.window.createWindow(
-          () => {
-            console.log('created', result.draggableId, posMap)
-          },
-          [result.draggableId],
-          true
-        )
-        let newTabIndex = 0
+      await window.indexBridge?.tabs.moveTabs(
+        (moved: boolean) => {
+          console.log('moving tabs')
+          if (moved) {
+            if (Object.keys(props.tabs).length == 1) {
+              window.indexBridge?.window.moveWindow(() => {
+                console.log('moved window')
+              })
+            } else {
+              window.indexBridge?.window.createWindow(
+                () => {
+                  console.log('created', result.draggableId, posMap)
+                },
+                [result.draggableId],
+                true
+              )
+              let newTabIndex = 0
 
-        if (props.selectedTab == result.draggableId) {
-          Object.keys(props.tabs).forEach((key, index) => {
-            if (key == `${result.draggableId}`) {
-              if (Object.keys(props.tabs).length < index + 2) {
-                newTabIndex = index - 1
-              } else {
-                newTabIndex = index + 1
+              if (props.selectedTab == result.draggableId) {
+                Object.keys(props.tabs).forEach((key, index) => {
+                  if (key == `${result.draggableId}`) {
+                    if (Object.keys(props.tabs).length < index + 2) {
+                      newTabIndex = index - 1
+                    } else {
+                      newTabIndex = index + 1
+                    }
+                  }
+                })
+                console.log('NEW TAB INDEX!!!', newTabIndex)
+                let validPos: number[] = []
+                posMap.forEach((pos) => {
+                  if (Object.keys(props.tabs).includes(`${pos}`)) {
+                    validPos.push(pos)
+                  }
+                })
+
+                let newTab = props.tabs[validPos[newTabIndex]]
+                window.indexBridge?.tabs.selectTab(newTab.id ?? props.tabs[0])
+                props.setSelectedTab(newTab.id ?? props.tabs[0])
               }
             }
-          })
-          console.log('NEW TAB INDEX!!!', newTabIndex)
-          let validPos: number[] = []
-          posMap.forEach((pos) => {
-            if (Object.keys(props.tabs).includes(`${pos}`)) {
-              validPos.push(pos)
-            }
-          })
-
-          let newTab = props.tabs[validPos[newTabIndex]]
-          window.indexBridge?.tabs.selectTab(newTab.id ?? props.tabs[0])
-          props.setSelectedTab(newTab.id ?? props.tabs[0])
-        }
-      }
+          }
+        },
+        [result.draggableId]
+      )
     } else {
       const items = posMap
       const [reorderedItem] = items.splice(result.source.index, 1)

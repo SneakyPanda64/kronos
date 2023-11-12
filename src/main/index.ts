@@ -7,6 +7,7 @@ import {
   getTabs,
   goBack,
   goForward,
+  handleMoveTabs,
   refreshTab,
   selectTab
 } from './tab'
@@ -57,6 +58,13 @@ app.whenReady().then(() => {
     const tabs = await getTabs(win.id)
 
     event.reply('tabs-reply', tabs)
+  })
+  ipcMain.on('move-tabs', async (event, tabIds) => {
+    console.log('holding tabs', tabIds)
+    let moved = await handleMoveTabs(tabIds)
+    console.log('fn move window')
+
+    event.reply('move-tabs-reply', moved)
   })
   ipcMain.on('select-tab', async (_, tabId) => {
     console.log('selecting tabid: ', tabId)
@@ -124,6 +132,7 @@ app.whenReady().then(() => {
     event.reply('focus-search-reply')
   })
   ipcMain.on('move-window', async (event, position: { x: number; y: number }) => {
+    console.log('REVIED MOVE WINDOW')
     let view = getViewById(event.sender.id)
     if (view == null) return
     let win = BrowserWindow.fromBrowserView(view)

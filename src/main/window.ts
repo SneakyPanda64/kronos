@@ -6,6 +6,7 @@ import {
   getHeader,
   getTabs,
   isTabHidden,
+  moveTabs,
   selectTab,
   showTab
 } from './tab'
@@ -46,38 +47,7 @@ export async function createWindow(
     await selectTab(tabId!)
   }
 
-  tabIds.forEach(async (id) => {
-    let view = getViewById(id)
-    console.log(view)
-    if (view === null) return
-    let oldWindow = BrowserWindow.fromBrowserView(view)
-    if (oldWindow == null) return
-    console.log('moving id: ', id)
-    // oldWindow.removeBrowserView(view)
-    mainWindow.addBrowserView(view)
-    await applyTabListeners(view)
-    console.log('moved id: ', view.webContents.id)
-
-    let header = await getHeader(oldWindow)
-    console.log('FUCK! OLDWINDOW', view.webContents.id, header.webContents.id)
-    await selectTab(view.webContents.id)
-    if (header != null) {
-      let tabs = await getTabs(oldWindow.id)
-      header.webContents.send('tabs-updated', tabs)
-    }
-    header = await getHeader(mainWindow)
-    console.log(
-      'FUCK! MAINWINDOW',
-      view.webContents.id,
-      header.webContents.id,
-      view.webContents.getTitle(),
-      header.webContents.getTitle()
-    )
-    if (header != null) {
-      let tabs = await getTabs(mainWindow.id)
-      header.webContents.send('tabs-updated', tabs)
-    }
-  })
+  moveTabs(tabIds, mainWindow.id)
 
   // console.log(
   //   '_>>>> NEW WINDOW TAB',
@@ -122,12 +92,40 @@ export function toggleMaximiseWindow(windowId: number) {
 }
 
 export function moveWindow(windowId: number, position: { x: number; y: number }) {
+  const { x, y } = screen.getCursorScreenPoint()
   let win = BrowserWindow.fromId(windowId)
   if (win == null) return
   if (position === undefined) {
-    const { x, y } = screen.getCursorScreenPoint()
-    win.setPosition(x - 100, y - 100)
+    const OFFSET = 150
+    const Y_OFFSET = 50
+    let distScreen = screen.getDisplayNearestPoint({ x: x, y: y })
+    let windowBounds = {
+      x: {
+        left: distScreen.bounds.x + OFFSET,
+        right: distScreen.bounds.x + distScreen.bounds.width - OFFSET
+      },
+      y: {
+        top: distScreen.bounds.y + Y_OFFSET,
+        bottom: distScreen.bounds.y + distScreen.bounds.height - Y_OFFSET
+      }
+    }
+    let newPosition = { x: x, y: y }
+    if (newPosition.x < windowBounds.x.left) {
+      newPosition.x = windowBounds.x.left
+    }
+    if (newPosition.x > windowBounds.x.right) {
+      newPosition.x = windowBounds.x.right
+    }
+    if (newPosition.y < windowBounds.y.top) {
+      newPosition.y = windowBounds.y.top
+    }
+    if (newPosition.y > windowBounds.y.bottom) {
+      newPosition.y = windowBounds.y.bottom
+    }
+    console.log('window bounds', windowBounds, distScreen.bounds.y, 'mouse: x,y :', x, y)
+    win.setPosition(newPosition.x, newPosition.y)
   } else {
     win.setPosition(position.x, position.y)
   }
+  win.setSize(win.getSize()[0] + 10, win.getSize()[1] + 10)
 }

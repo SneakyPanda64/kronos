@@ -40,8 +40,10 @@ export default function TabButton(props: {
           <div className="pt-1 mb-4 ">
             <div
               className={
-                `mx-1 p-1 pb-10 bg-s-blue hover:bg-opacity-10  rounded-tl-lg rounded-tr-lg flex ` +
-                (props.tab.id === props.selectedTab ? ' bg-opacity-20' : ' bg-opacity-5')
+                `mx-1 p-1 pb-10 bg-s-blue  rounded-tl-lg rounded-tr-lg flex ` +
+                (props.tab.id === props.selectedTab
+                  ? ' bg-opacity-20'
+                  : ' bg-opacity-5 hover:bg-opacity-10')
               }
             >
               {props.tab.navigation.isLoading ? (

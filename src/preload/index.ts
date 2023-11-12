@@ -5,6 +5,7 @@ console.log('loaded preload')
 let indexBridge = {
   tabs: {
     watchTabs: (callback: any) => ipcRenderer.on('tabs-updated', callback),
+    watchSelectedTab: (callback: any) => ipcRenderer.on('selected-tab-updated', callback),
     requestTabs: (callback: any) => {
       ipcRenderer.once('tabs-reply', (_, tabs) => {
         callback(tabs)
@@ -32,13 +33,12 @@ let indexBridge = {
       })
       ipcRenderer.send('refresh-tab', tabId)
     },
-    holdingTabs: (callback: any, tabIds: number[]) => {
-      ipcRenderer.once('holding-tabs-reply', (_) => {
-        callback()
+    moveTabs: (callback: any, tabIds: number[]) => {
+      ipcRenderer.once('move-tabs-reply', (_, moved: boolean) => {
+        callback(moved)
       })
-      ipcRenderer.send('holding-tabs', tabIds)
-    },
-    onHoldingTabs: (callback: any) => ipcRenderer.on('holding-tabs', callback)
+      ipcRenderer.send('move-tabs', tabIds)
+    }
   },
   header: {
     focusSearch: (callback: any) => {
