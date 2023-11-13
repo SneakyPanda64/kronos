@@ -21,8 +21,8 @@ import {
 } from './window'
 import { goToUrl } from './url'
 import { getViewById, router, windowFromViewId } from './util'
-import { closeOverlay, openOverlay } from './overlay'
-import { encode } from 'url-safe-base64'
+import { closeOverlay, getOverlay, openOverlay } from './overlay'
+import { encode } from 'js-base64'
 import { getHistory } from './db'
 // import { addHistory, getHistory } from './db'
 // import { createCollection, createDatabase, insertHistory } from './db'
@@ -80,13 +80,17 @@ app.whenReady().then(() => {
     console.log('selecting tabid: ', tabId)
     await selectTab(tabId)
   })
-  ipcMain.on('new-tab', async (event) => {
+  ipcMain.on('new-tab', async (event, url: string) => {
     console.log('attempt NEW TAB')
     let win = windowFromViewId(event.sender.id)
     if (win === null) return
     let tabId = await createTab(win.id)
-    event.reply('new-tab-reply', tabId)
+    if (url != '') {
+      await goToUrl(tabId!, url)
+    }
     await selectTab(tabId!)
+    event.reply('new-tab-reply', tabId)
+
     focusSearch(win.id)
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
@@ -127,7 +131,7 @@ app.whenReady().then(() => {
     let view = getViewById(tab.id)
     if (view == null) return
     console.log('opening settings: ', type)
-    const urlHash = encode(Buffer.from(`amenoi://settings/${type}`).toString('base64'))
+    const urlHash = encode(`amenoi://settings/${type}`, true)
     await router(view, `settings?id=none&url=${urlHash}&verify=${VERIFY_ID}&type=${type}`)
     event.reply('open-settings-reply')
   })
@@ -152,19 +156,29 @@ app.whenReady().then(() => {
     moveWindow(win.id, position)
     event.reply('move-window-reply', event.sender.id)
   })
-  ipcMain.on('open-overlay', async (event, type: string, position: { x: number; y: number }) => {
-    console.log('opening overlay!')
-    let win = windowFromViewId(event.sender.id)
-    if (win === null) return
-    await openOverlay(win, type, position)
-    event.reply('open-overlay-reply')
-  })
+  ipcMain.on(
+    'open-overlay',
+    async (event, type: string, position: { x: number; y: number }, focus: boolean) => {
+      let win = windowFromViewId(event.sender.id)
+      if (win === null) return
+      await openOverlay(win, type, position, focus)
+      event.reply('open-overlay-reply')
+    }
+  )
   ipcMain.on('close-overlay', async (event) => {
     let win = windowFromViewId(event.sender.id)
     if (win === null) return
     console.log('attempt close!')
     await closeOverlay(win)
     event.reply('close-overlay-reply')
+  })
+  ipcMain.on('send-overlay-data', async (event, data: any) => {
+    let win = windowFromViewId(event.sender.id)
+    if (win === null) return
+    let overlay = await getOverlay(win)
+    if (overlay == null) return
+    overlay.webContents.send('sending-overlay-data', data)
+    event.reply('send-overlay-data-reply')
   })
   ipcMain.on('get-history', async (event) => {
     let history = await getHistory()

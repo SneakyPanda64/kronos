@@ -1,6 +1,6 @@
 import { AxiosError, default as axios } from 'axios'
 import { getFavicon, getViewById, router } from './util'
-import { encode } from 'url-safe-base64'
+import { encode } from 'js-base64'
 // import { addHistory } from './db'
 import { v4 as uuidv4 } from 'uuid'
 import { addHistory, addQueryHistory } from './db'
@@ -50,16 +50,16 @@ export async function goToUrl(tabId: number, url: string) {
         timestamp: Math.floor(Date.now() / 1000)
       })
     }
-    let favicon = await getFavicon(view)
-    addHistory({
-      id: `${uuidv4()}`,
-      favicon: favicon,
-      title: view.webContents.getTitle(),
-      url: url,
-      timestamp: Math.floor(Date.now() / 1000)
-    })
+    // let favicon = await getFavicon(view)
+    // addHistory({
+    //   id: `${uuidv4()}`,
+    //   favicon: favicon,
+    //   title: view.webContents.getTitle(),
+    //   url: url,
+    //   timestamp: Math.floor(Date.now() / 1000)
+    // })
   } else {
-    const urlHash = encode(Buffer.from(url).toString('base64'))
+    const urlHash = encode(url, true)
     await router(view, `error?id=${errorId}&url=${urlHash}&verify=${VERIFY_ID}`)
     // view.webContents.openDevTools({ mode: 'detach' })
   }

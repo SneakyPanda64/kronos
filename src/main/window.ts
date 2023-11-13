@@ -25,19 +25,13 @@ export async function createWindow(
       webSecurity: false
     }
   })
-  console.log('hi')
-
   if (maximised) {
     mainWindow.maximize()
   }
-  console.log('hi')
 
   await createHeader(mainWindow)
-  console.log('hi')
 
   if (tabIds.length == 0) {
-    console.log('123 - creating tab')
-
     let tabId = await createTab(mainWindow.id)
 
     await selectTab(tabId!)

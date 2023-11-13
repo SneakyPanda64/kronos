@@ -2,19 +2,30 @@ import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './util'
 
+let LAST_OVERLAY = ''
+
 export async function closeOverlay(win: BrowserWindow) {
   console.log('closing overlay')
-  let view: BrowserView | null = await getOverlay(win)
-  if (view == null) return
-  win.removeBrowserView(view)
-  ;((view as any).webContents as any).destroy()
+  // let view: BrowserView | null = await getOverlay(win)
+  // if (view == null) return
+  // win.removeBrowserView(view)
+  // ;((view as any).webContents as any).destroy()
+  // LAST_OVERLAY = ''
 }
 
 export async function openOverlay(
   win: BrowserWindow,
   type: string,
-  position: { x: number; y: number }
+  position: { x: number; y: number },
+  focus: boolean
 ) {
+  if (LAST_OVERLAY === type) {
+    return
+  }
+  LAST_OVERLAY = type
+  try {
+    await closeOverlay(win)
+  } catch (e) {}
   let view = new BrowserView({
     webPreferences: {
       devTools: true,
@@ -39,20 +50,31 @@ export async function openOverlay(
         width: 100,
         height: 500
       }
+    },
+    search: {
+      size: {
+        width: Math.round(win.getBounds().width / 2),
+        height: 200
+      }
     }
   }
   let size = { width: types[type].size.width, height: types[type].size.height }
   let pos = {
-    x: Math.round(position.x - size.width),
+    x: Math.round(position.x),
     y: Math.round(position.y)
+  }
+  if ((pos.x -= size.width) < 0) {
+    pos.x += size.width
   }
   await router(view, `overlay?id=none&type=${type}`)
   await view.webContents.executeJavaScript("window.tagId = 'overlay'")
 
   console.log('size:', size, 'Pos', pos)
   view.setBounds({ width: size.width, height: size.height, x: pos.x, y: pos.y })
-  view.webContents.focus()
-  // view.webContents.openDevTools({ mode: 'detach' })
+  if (focus) {
+    view.webContents.focus()
+  }
+  view.webContents.openDevTools({ mode: 'detach' })
 }
 
 export async function isOverlay(view: BrowserView) {

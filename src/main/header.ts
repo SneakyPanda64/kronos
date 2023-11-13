@@ -27,10 +27,8 @@ export async function createHeader(win: BrowserWindow) {
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
-  console.log('hi header')
 
   view.webContents.executeJavaScript("window.tagId = 'header'")
-  console.log('hi header2')
   win.addBrowserView(view)
 
   view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
@@ -56,5 +54,5 @@ export async function createHeader(win: BrowserWindow) {
       y: 0
     })
   })
-  // view.webContents.openDevTools({ mode: 'detach' })
+  view.webContents.openDevTools({ mode: 'detach' })
 }

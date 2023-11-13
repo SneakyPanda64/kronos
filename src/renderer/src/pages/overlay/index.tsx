@@ -1,11 +1,13 @@
 import { useSearchParams } from 'react-router-dom'
 import MenuPanel from './panels/menu'
 import DownloadsPanel from './panels/downloads'
+import SearchPanel from './panels/search'
 
 export default function Overlay() {
   const panels = {
     menu: <MenuPanel />,
-    downloads: <DownloadsPanel />
+    downloads: <DownloadsPanel />,
+    search: <SearchPanel />
   }
   const [searchParams] = useSearchParams()
   let type = searchParams.get('type') ?? 'menu'

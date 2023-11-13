@@ -46,7 +46,6 @@ export function getViewById(id: number): BrowserView | null {
   BrowserWindow.getAllWindows().forEach((win) => {
     win.getBrowserViews().forEach((elem) => {
       if (elem.webContents.id == id) {
-        console.log('compare: ', elem.webContents.id, id)
         found = elem
       }
     })
@@ -60,7 +59,7 @@ export function getViewById(id: number): BrowserView | null {
 export async function router(view: BrowserView | BrowserWindow, subPath: string) {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     // await view.webContents.loadURL('https://google.com/')
-    console.log('URL', process.env['ELECTRON_RENDERER_URL'])
+    // console.log('URL', process.env['ELECTRON_RENDERER_URL'])
     try {
       await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {}) // + '#' + subPath)
     } catch (e) {

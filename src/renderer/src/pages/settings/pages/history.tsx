@@ -5,20 +5,13 @@ import Fuse from 'fuse.js'
 export default function HistoryPage() {
   const [history, setHistory] = useState<Array<any>>([])
   const [searchTerm, setSearchTerm] = useState('')
-  //   const items = [
-  //     { title: 'Apple' },
-  //     { title: 'Banana' },
-  //     { title: 'Orange' }
-  //     // ... add more items as needed
-  //   ]
   const [searchResults, setSearchResults] = useState(history)
   const options = {
-    // Fuse.js options, you can customize this based on your requirements
     keys: ['title', 'url']
   }
   const fuse = new Fuse(history, options)
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: any) => {
     const { value } = e.target
     setSearchTerm(value)
     setSearchResults(fuse.search(value))
@@ -43,9 +36,16 @@ export default function HistoryPage() {
       </div>
     )
   }
+  const handleHistoryClick = (url: string) => {
+    console.log('creating new tab2')
+    window.indexBridge?.tabs.newTab((tabId: number) => {
+      console.log('new tab created!')
+    }, url)
+  }
   const historyComponent = (item: HistoryItem) => {
     return (
       <div
+        onClick={() => handleHistoryClick(item.url)}
         key={item.id}
         className="bg-s-dark-gray my-2 p-4 rounded-xl hover:bg-s-blue hover:bg-opacity-20 hover:cursor-pointer"
       >
@@ -90,13 +90,17 @@ export default function HistoryPage() {
         })
       ) : searchResults.length > 0 ? (
         searchResults.map((result) => {
-          return historyComponent({
-            id: result.item.id,
-            favicon: result.item.favicon,
-            title: result.item.title,
-            url: result.item.url,
-            timestamp: result.item.timestamp
-          })
+          return (result.item.url ?? '').length > 1 && result.item.query == null ? (
+            historyComponent({
+              id: result.item.id,
+              favicon: result.item.favicon,
+              title: result.item.title,
+              url: result.item.url,
+              timestamp: result.item.timestamp
+            })
+          ) : (
+            <></>
+          )
         })
       ) : (
         <div>

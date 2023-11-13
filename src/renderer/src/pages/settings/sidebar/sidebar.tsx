@@ -28,9 +28,9 @@ export default function Sidebar() {
     searchParams.set('type', newType)
     navigate(`?${searchParams}`)
   }
-  const navComponent = (item) => {
+  const navComponent = (item: any) => {
     return (
-      <div className="">
+      <div>
         <div
           onClick={() => handleTypeChange(item.type)}
           className={
@@ -50,8 +50,12 @@ export default function Sidebar() {
   return (
     <div className="">
       <div className="bg-s-dark-gray h-screen pt-12">
-        {navItems.map((item) => {
-          return <div className="my-8 mx-4">{navComponent(item)}</div>
+        {navItems.map((item, index) => {
+          return (
+            <div key={index} className="my-8 mx-4">
+              {navComponent(item)}
+            </div>
+          )
         })}
       </div>
     </div>

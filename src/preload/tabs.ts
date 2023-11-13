@@ -12,11 +12,11 @@ let tabs = {
   selectTab: (tabId: number) => {
     ipcRenderer.send('select-tab', tabId)
   },
-  newTab: (callback: any) => {
+  newTab: (callback: any, url = '') => {
     ipcRenderer.once('new-tab-reply', (_, tabId) => {
       callback(tabId)
     })
-    ipcRenderer.send('new-tab')
+    ipcRenderer.send('new-tab', url)
   },
   deleteTab: (callback: any, tabId: number) => {
     ipcRenderer.once('delete-tab-reply', (_) => {

@@ -1,7 +1,15 @@
 import { Tab } from '@renderer/interfaces'
+import Fuse from 'fuse.js'
 import { useEffect, useRef, useState } from 'react'
 
 export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
+  const [history, setHistory] = useState<Array<any>>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState(history)
+  const options = {
+    keys: ['title', 'url']
+  }
+  const fuse = new Fuse(history, options)
   const getURL = () => {
     const tab = props.tabs[props.selectedTab]
     if (props.tabs.length == 0) {
@@ -23,6 +31,10 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
         setIsSelected(true)
       }
     })
+    window.indexBridge?.history.getHistory((items) => {
+      console.log(items)
+      setHistory(items)
+    })
   }, [])
 
   useEffect(() => {
@@ -43,6 +55,53 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   const [url, setUrl] = useState(getURL())
   const [isSelected, setIsSelected] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
+
+  useEffect(() => {
+    console.log('attempt data sent')
+  }, [searchResults])
+  useEffect(() => {
+    if (isFocused && url.length > 1) {
+      const { x, y, height } = (searchRef.current as any).getBoundingClientRect()
+      if (searchResults !== undefined) {
+        window.indexBridge?.overlay.openOverlay(
+          () => {
+            window.indexBridge?.overlay.sendData(
+              () => {
+                console.log('data sent')
+              },
+              {
+                data: {
+                  similar: searchResults.slice(0, 3)
+                }
+              }
+            )
+          },
+
+          'search',
+          { x: x, y: y + height + 5 },
+          false
+        )
+      }
+    } else {
+      window.indexBridge?.overlay.closeOverlay(() => {
+        console.log('closed overlay')
+      })
+    }
+  }, [url])
+  useEffect(() => {
+    if (!isFocused) {
+      window.indexBridge?.overlay.closeOverlay(() => {
+        console.log('closed overlay')
+      })
+    }
+  }, [isFocused])
+  const handleValueChange = (e: any) => {
+    setUrl(e.target.value)
+    const { value } = e.target
+    setSearchTerm(value)
+    let results = fuse.search(value)
+    setSearchResults(results)
+  }
   const urlComponent = (url: string) => {
     let protocol = url.split('://')[0] + '://'
     if (url.split('://').length < 2) protocol = ''
@@ -71,7 +130,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
       <input
         ref={searchRef}
         onMouseLeave={() => (!isFocused ? setIsSelected(false) : null)}
-        onChange={(e) => setUrl(e.target.value)}
+        onChange={handleValueChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => {
           setIsFocused(false)

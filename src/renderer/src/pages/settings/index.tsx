@@ -4,6 +4,7 @@ import HistoryPage from './pages/history'
 import SyncPage from './pages/sync'
 import Sidebar from './sidebar/sidebar'
 import SettingsPage from './pages/settings'
+import Helmet from 'react-helmet'
 
 export default function Settings() {
   const pages = {
@@ -16,6 +17,9 @@ export default function Settings() {
 
   return (
     <div className="grid grid-cols-5 lg:grid-cols-5 overflow-hidden">
+      <Helmet>
+        <title>Settings</title>
+      </Helmet>
       <div className="h-screen hidden sm:block">
         <Sidebar />
       </div>

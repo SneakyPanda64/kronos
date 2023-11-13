@@ -8,7 +8,7 @@ export async function addHistory(item: HistoryItem) {
   if (!item.url.includes(VERIFY_ID) && item.url.length > 3) {
     console.log('adding history', item)
     storage.set(
-      `history.${item.id}`,
+      item.id,
       { url: item.url, favicon: item.favicon, title: item.title, timestamp: item.timestamp },
       function (error) {
         if (error) throw error
@@ -19,17 +19,13 @@ export async function addHistory(item: HistoryItem) {
 
 export async function addQueryHistory(item: QueryItem) {
   console.log('adding query history', item)
-  storage.set(
-    `queries.${item.id}`,
-    { query: item.query, timestamp: item.timestamp },
-    function (error) {
-      if (error) throw error
-    }
-  )
+  storage.set(item.id, { query: item.query, timestamp: item.timestamp }, function (error) {
+    if (error) throw error
+  })
 }
 export async function getHistory() {
   return new Promise((resolve, reject) => {
-    storage.get('history', async (error, data) => {
+    storage.getAll(async (error, data) => {
       if (error) {
         reject(error)
       } else {

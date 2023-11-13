@@ -11,7 +11,6 @@ import { getFaviconData } from './favicon'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
-  console.log('SELECTING TAB ID!!!!!!', tabId)
   let view = getViewById(tabId)
   if (view == null) return
   let win = BrowserWindow.fromBrowserView(view)
@@ -68,7 +67,7 @@ export async function applyTabListeners(view: BrowserView) {
         let favicon_url = await getFavicon(view)
         addHistory({
           id: `${uuidv4()}`,
-          favicon: favicon_url,
+          favicon: favicon_url ?? 'navigated',
           title: view.webContents.getTitle(),
           url: url,
           timestamp: Date.now()
@@ -79,13 +78,6 @@ export async function applyTabListeners(view: BrowserView) {
     })
     view.webContents.on('page-favicon-updated', async (_, favicons) => {
       const tabs = await getTabs(win!.id, favicons[0])
-      console.log('FOUND USING FAVICON UPDATE', favicons[0])
-      // let newTabs = tabs
-      // newTabs.forEach((tab) => {
-      //   if (tab.id === view.webContents.id) {
-      //     // tab.favicon = favicons.length != 0 ? favicons[0] : ''
-      //   }
-      // })
       header.webContents.send('tabs-updated', tabs)
     })
   }
@@ -112,11 +104,11 @@ export async function createTab(windowId: number, url = '') {
   await applyTabListeners(view)
   if (url === '') {
     let urlHash = encode('‎', true)
-    console.log(urlHash)
+    // console.log(urlHash)
     await router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
     focusSearch(windowId)
   } else {
-    console.log('loading url')
+    // console.log('loading url')
     await view.webContents.loadURL(url)
   }
   view.webContents.openDevTools({ mode: 'detach' })
@@ -151,7 +143,7 @@ export async function getTabs(windowId: number, favicon = '') {
           elem.webContents.getURL(),
           favicon !== '' ? favicon : favicon_url
         )
-        console.log('FAVICON LENGTH', fav.length)
+        // console.log('FAVICON LENGTH', fav.length)
         let tab = {
           id: elem.webContents.id,
           title: elem.webContents.getTitle() ?? 'no title',
