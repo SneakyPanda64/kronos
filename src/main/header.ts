@@ -50,5 +50,5 @@ export async function createHeader(win: BrowserWindow) {
       y: 0
     })
   })
-  view.webContents.openDevTools({ mode: 'detach' })
+  // view.webContents.openDevTools({ mode: 'detach' })
 }

@@ -2,7 +2,6 @@ import { BrowserWindow, shell, screen } from 'electron'
 import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
-import { closeOverlay, isOverlay } from './overlay'
 
 export async function createWindow(
   tabIds: number[],

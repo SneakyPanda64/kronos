@@ -13,7 +13,7 @@ export default function MenuPanel() {
         console.log('?????')
         window.indexBridge?.tabs.newTab(() => {
           console.log('new tab')
-          //   closeOverlay()
+          closeOverlay()
         })
       }
     },

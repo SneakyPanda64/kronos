@@ -1,14 +1,6 @@
-import { BrowserView, BrowserWindow, screen } from 'electron'
+import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './util'
-import { overlay } from '../preload/overlay'
-
-let OVERLAY_ID = 0
-let LAST_TYPE = ''
-
-// export default async function createOverlay(win: BrowserWindow) {
-
-// }
 
 export async function closeOverlay(win: BrowserWindow) {
   console.log('closing overlay')
@@ -16,10 +8,6 @@ export async function closeOverlay(win: BrowserWindow) {
   if (view == null) return
   win.removeBrowserView(view)
   ;((view as any).webContents as any).destroy()
-  //   let overlayWindow = BrowserWindow.fromId(OVERLAY_ID)
-  //   if (overlayWindow == null) return
-  //   if (!overlayWindow.isVisible()) return
-  //   overlayWindow.hide()
 }
 
 export async function openOverlay(
@@ -64,7 +52,6 @@ export async function openOverlay(
   console.log('size:', size, 'Pos', pos)
   view.setBounds({ width: size.width, height: size.height, x: pos.x, y: pos.y })
   view.webContents.focus()
-
   //   view.webContents.openDevTools({ mode: 'detach' })
 }
 

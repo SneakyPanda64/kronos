@@ -1,4 +1,3 @@
-import { MouseEvent } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { GiHamburgerMenu } from 'react-icons/gi'
 

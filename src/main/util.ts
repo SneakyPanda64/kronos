@@ -3,6 +3,14 @@ import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
 import { is } from '@electron-toolkit/utils'
 
+export function windowFromViewId(viewId: number) {
+  let view = getViewById(viewId)
+  if (view == null) return null
+  let win = BrowserWindow.fromBrowserView(view)
+  if (win === null) return null
+  return win
+}
+
 export async function getFavicon(browserView: BrowserView) {
   if (!(browserView instanceof BrowserView)) {
     throw new Error('Invalid argument. Expected a BrowserView instance.')
@@ -35,10 +43,8 @@ export function getViewById(id: number): BrowserView | null {
     })
   })
   if (found == false) {
-    console.log(id, 'new not found')
     return null
   }
-  console.log(id, 'new found')
   return found
 }
 

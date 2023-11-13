@@ -1,14 +1,12 @@
-import { BrowserView, BrowserWindow, ipcMain, screen } from 'electron'
-// import { resolveHtmlPath } from './util'
+import { BrowserView, BrowserWindow, screen } from 'electron'
 import path from 'path'
 import { getFavicon, getViewById, router } from './util'
 import { encode } from 'js-base64'
 import { deleteWindow } from './window'
 import { getHeader } from './header'
-import { getOverlay, isOverlay } from './overlay'
+import { isOverlay } from './overlay'
 
 const NAVIGATOR_HEIGHT = 80
-const WINDOW_WIDTH = 600
 
 export async function selectTab(tabId: number) {
   console.log('SELECTING TAB ID!!!!!!', tabId)
@@ -267,7 +265,6 @@ export async function handleMoveTabs(tabIds: number[]) {
         return false
       }
     }
-    // Now you can do something with 'views' related to the current window 'win'...
   }
   return true
 }
