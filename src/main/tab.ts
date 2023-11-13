@@ -4,8 +4,10 @@ import { getFavicon, getViewById, router } from './util'
 import { encode } from 'js-base64'
 import { deleteWindow } from './window'
 import { getHeader } from './header'
-import { isOverlay } from './overlay'
-
+import { getOverlay, isOverlay } from './overlay'
+import { addHistory } from './db'
+import { v4 as uuidv4 } from 'uuid'
+import { getFaviconData } from './favicon'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
@@ -59,15 +61,32 @@ export async function applyTabListeners(view: BrowserView) {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
+    let prevUrls: string[] = []
+    view.webContents.on('did-navigate', async (event, url) => {
+      if (!prevUrls.includes(url)) {
+        console.log('new NAVIGATED!')
+        let favicon_url = await getFavicon(view)
+        addHistory({
+          id: `${uuidv4()}`,
+          favicon: favicon_url,
+          title: view.webContents.getTitle(),
+          url: url,
+          timestamp: Date.now()
+        })
+
+        prevUrls.push(url)
+      }
+    })
     view.webContents.on('page-favicon-updated', async (_, favicons) => {
-      const tabs = await getTabs(win!.id)
-      let newTabs = tabs
-      newTabs.forEach((tab) => {
-        if (tab.id === view.webContents.id) {
-          tab.favicon = favicons.length != 0 ? favicons[0] : ''
-        }
-      })
-      header.webContents.send('tabs-updated', newTabs)
+      const tabs = await getTabs(win!.id, favicons[0])
+      console.log('FOUND USING FAVICON UPDATE', favicons[0])
+      // let newTabs = tabs
+      // newTabs.forEach((tab) => {
+      //   if (tab.id === view.webContents.id) {
+      //     // tab.favicon = favicons.length != 0 ? favicons[0] : ''
+      //   }
+      // })
+      header.webContents.send('tabs-updated', tabs)
     })
   }
 }
@@ -77,9 +96,11 @@ export async function createTab(windowId: number, url = '') {
   if (win === null) return
   const view = new BrowserView({
     webPreferences: {
+      devTools: true,
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
+
   win.addBrowserView(view)
   view.setBounds({
     x: 0,
@@ -98,11 +119,11 @@ export async function createTab(windowId: number, url = '') {
     console.log('loading url')
     await view.webContents.loadURL(url)
   }
-
+  view.webContents.openDevTools({ mode: 'detach' })
   return view.webContents.id
 }
 
-export async function getTabs(windowId: number, favicon = '', findFavicon = false) {
+export async function getTabs(windowId: number, favicon = '') {
   let tabs: {
     id: number
     title: string
@@ -114,6 +135,7 @@ export async function getTabs(windowId: number, favicon = '', findFavicon = fals
       canGoForward: boolean
     }
   }[] = []
+
   let win = BrowserWindow.fromId(windowId)
   if (win === null) return []
   for (const elem of win.getBrowserViews()) {
@@ -124,11 +146,17 @@ export async function getTabs(windowId: number, favicon = '', findFavicon = fals
       !(await isOverlay(elem))
     ) {
       try {
+        let favicon_url = await getFavicon(elem)
+        let fav = await getFaviconData(
+          elem.webContents.getURL(),
+          favicon !== '' ? favicon : favicon_url
+        )
+        console.log('FAVICON LENGTH', fav.length)
         let tab = {
           id: elem.webContents.id,
           title: elem.webContents.getTitle() ?? 'no title',
           url: elem.webContents.getURL(),
-          favicon: '',
+          favicon: fav,
           navigation: {
             isLoading: elem.webContents.isLoading(),
             canGoBack: elem.webContents.canGoBack(),
@@ -138,14 +166,14 @@ export async function getTabs(windowId: number, favicon = '', findFavicon = fals
         if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
           tab.url = ''
         }
-        if (favicon !== undefined) tab.favicon = favicon
-        if (findFavicon) {
-          let favicon = await getFavicon(elem)
-          tab.favicon = favicon
-        }
+        // if (favicon !== undefined) tab.favicon = favicon
+        // if (findFavicon) {
+        //   let favicon = await getFavicon(elem)
+        //   tab.favicon = favicon
+        // }
         tabs.push(tab)
       } catch (e) {
-        console.log('error occured')
+        console.log('error occured', e)
       }
     }
   }
@@ -274,10 +302,27 @@ export async function updateAllWindows() {
   for (const win of windows) {
     if (win == null) return
     const header = await getHeader(win)
-    let tabs = await getTabs(win.id, '', true)
+    let tabs = await getTabs(win.id, '')
     if (tabs.length == 0) {
       deleteWindow(win.id)
     }
     header.webContents.send('tabs-updated', tabs)
   }
+}
+
+export async function getSelectedTab(win: BrowserWindow) {
+  let tabs = await getTabs(win.id)
+  let header = await getHeader(win)
+  let overlay = await getOverlay(win)
+  for (const tab of tabs) {
+    try {
+      if (tab.id !== header.webContents.id && tab.id !== overlay?.webContents.id) {
+        console.log('TABID is not header/overlay')
+        if (!isTabHidden(tab.id)) {
+          return tab
+        }
+      }
+    } catch (e) {}
+  }
+  return null
 }

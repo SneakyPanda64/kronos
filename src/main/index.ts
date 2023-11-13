@@ -4,6 +4,7 @@ import {
   createTab,
   deleteTab,
   focusSearch,
+  getSelectedTab,
   getTabs,
   goBack,
   goForward,
@@ -19,11 +20,19 @@ import {
   toggleMaximiseWindow
 } from './window'
 import { goToUrl } from './url'
-import { getViewById, windowFromViewId } from './util'
+import { getViewById, router, windowFromViewId } from './util'
 import { closeOverlay, openOverlay } from './overlay'
+import { encode } from 'url-safe-base64'
+import { getHistory } from './db'
+// import { addHistory, getHistory } from './db'
+// import { createCollection, createDatabase, insertHistory } from './db'
+
+const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
 app.whenReady().then(() => {
+  // const db = new sqlite3.Database('./databases/history.db')
   electronApp.setAppUserModelId('com.electron')
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
@@ -109,6 +118,19 @@ app.whenReady().then(() => {
     await goToUrl(tabId, url)
     event.reply('go-to-url-reply')
   })
+  ipcMain.on('open-settings', async (event, type: string) => {
+    console.log('opening settings')
+    let win = windowFromViewId(event.sender.id)
+    if (win === null) return
+    let tab = await getSelectedTab(win)
+    if (tab == null) return
+    let view = getViewById(tab.id)
+    if (view == null) return
+    console.log('opening settings: ', type)
+    const urlHash = encode(Buffer.from(`amenoi://settings/${type}`).toString('base64'))
+    await router(view, `settings?id=none&url=${urlHash}&verify=${VERIFY_ID}&type=${type}`)
+    event.reply('open-settings-reply')
+  })
   ipcMain.on('go-back', async (event, tabId: number) => {
     await goBack(tabId)
     event.reply('go-back-reply')
@@ -143,6 +165,11 @@ app.whenReady().then(() => {
     console.log('attempt close!')
     await closeOverlay(win)
     event.reply('close-overlay-reply')
+  })
+  ipcMain.on('get-history', async (event) => {
+    let history = await getHistory()
+    // console.log('history', history)
+    event.reply('get-history-reply', history)
   })
   createWindow([], { x: 0, y: 0 })
 

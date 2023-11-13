@@ -1,6 +1,10 @@
 import { AxiosError, default as axios } from 'axios'
-import { getViewById, router } from './util'
+import { getFavicon, getViewById, router } from './util'
 import { encode } from 'url-safe-base64'
+// import { addHistory } from './db'
+import { v4 as uuidv4 } from 'uuid'
+import { addHistory, addQueryHistory } from './db'
+
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
 export async function resolveUrl(url: string) {
@@ -22,6 +26,7 @@ export async function goToUrl(tabId: number, url: string) {
   const protocols = ['http', 'https']
   const regex = /^(\w+\.\w+(\.\w+)*)/
   url = url.replaceAll('‎', '')
+  let query = ''
   const match = regex.exec(url)
   let errorId: string | undefined = ''
   if (!protocols.includes(url.split('://')[0])) {
@@ -29,6 +34,8 @@ export async function goToUrl(tabId: number, url: string) {
       url = `https://${url}`
       errorId = await resolveUrl(url)
     } else {
+      query = url
+
       url = `https://google.com/search?q=${url}`
     }
   } else {
@@ -36,6 +43,21 @@ export async function goToUrl(tabId: number, url: string) {
   }
   if (errorId === '') {
     await view.webContents.loadURL(url)
+    if (query != '') {
+      addQueryHistory({
+        id: `${uuidv4()}`,
+        query: query,
+        timestamp: Math.floor(Date.now() / 1000)
+      })
+    }
+    let favicon = await getFavicon(view)
+    addHistory({
+      id: `${uuidv4()}`,
+      favicon: favicon,
+      title: view.webContents.getTitle(),
+      url: url,
+      timestamp: Math.floor(Date.now() / 1000)
+    })
   } else {
     const urlHash = encode(Buffer.from(url).toString('base64'))
     await router(view, `error?id=${errorId}&url=${urlHash}&verify=${VERIFY_ID}`)

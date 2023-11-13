@@ -18,12 +18,14 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
       console.log('refresh')
     }, props.selectedTab)
   }
-  return props.tabs[props.selectedTab] ? (
+  return (
     <div className="flex ml-4">
       <div
         className={
           `my-auto text-s-dark-blue  rounded-md p-2  ` +
-          (props.tabs[props.selectedTab].navigation.canGoBack
+          (props.tabs[props.selectedTab] === undefined
+            ? ''
+            : props.tabs[props.selectedTab].navigation.canGoBack
             ? 'text-opacity-100 hover:text-white'
             : 'text-opacity-20')
         }
@@ -34,7 +36,9 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
       <div
         className={
           `my-auto text-s-dark-blue  rounded-md p-2  ` +
-          (props.tabs[props.selectedTab].navigation.canGoForward
+          (props.tabs[props.selectedTab] === undefined
+            ? ''
+            : props.tabs[props.selectedTab].navigation.canGoForward
             ? 'text-opacity-100 hover:text-white'
             : 'text-opacity-20')
         }
@@ -43,14 +47,14 @@ export default function Actions(props: { selectedTab: any; tabs: Tab[] }) {
         <BiRightArrow />
       </div>
       <div className={`my-auto text-s-dark-blue  rounded-md p-2 `} onClick={() => handleRefresh()}>
-        {props.tabs[props.selectedTab].navigation.isLoading ? (
+        {props.tabs[props.selectedTab] === undefined ? (
+          <RxCross2 size={22} />
+        ) : props.tabs[props.selectedTab].navigation.isLoading ? (
           <RxCross2 size={22} />
         ) : (
           <BiRefresh size={22} />
         )}
       </div>
     </div>
-  ) : (
-    <></>
   )
 }

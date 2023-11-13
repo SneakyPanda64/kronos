@@ -8,6 +8,7 @@ import TabBar from './components/navigator/navigator/tab/tab.tsx'
 import ErrorPage from './pages/error.tsx'
 import SearchPage from './pages/search.tsx'
 import Overlay from './pages/overlay/index.tsx'
+import Settings from './pages/settings/index.tsx'
 // import { ipcRenderer, ipcMain } from 'electron'; // Use `require` here
 function Main() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/error" Component={ErrorPage} />
         <Route path="/search" Component={SearchPage} />
         <Route path="/overlay" Component={Overlay} />
+        <Route path="/settings" Component={Settings} />
       </Routes>
     </HashRouter>
   )

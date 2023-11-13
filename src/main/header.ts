@@ -27,10 +27,16 @@ export async function createHeader(win: BrowserWindow) {
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
+  console.log('hi header')
+
   view.webContents.executeJavaScript("window.tagId = 'header'")
+  console.log('hi header2')
   win.addBrowserView(view)
+
   view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
+
   view.setAutoResize({ width: true, height: false })
+
   await router(view, '')
   win.on('unmaximize', () => {
     console.log('left full screen')

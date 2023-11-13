@@ -35,18 +35,33 @@ export default function MenuPanel() {
     {
       type: 'link',
       title: 'History',
-      link: 'history'
+      link: 'history',
+      action: () => {
+        window.indexBridge?.settings.openSettings(() => {
+          closeOverlay()
+        }, 'history')
+      }
     },
     {
       type: 'link',
       title: 'Downloads',
       link: 'downloads',
-      keybind: 'Ctrl+J'
+      keybind: 'Ctrl+J',
+      action: () => {
+        window.indexBridge?.settings.openSettings(() => {
+          closeOverlay()
+        }, 'downloads')
+      }
     },
     {
       type: 'link',
       title: 'Settings',
-      link: 'settings'
+      link: 'settings',
+      action: () => {
+        window.indexBridge?.settings.openSettings(() => {
+          closeOverlay()
+        }, 'settings')
+      }
     }
   ]
   const itemComponent = (item: any) => {

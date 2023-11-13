@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { useSearchParams } from 'react-router-dom'
 import '../assets/index.css'
@@ -29,6 +29,7 @@ export default function ErrorPage() {
       <div className="flex h-screen w-screen text-xl text-white font-normal relative p-8">
         <Helmet>
           <link rel="icon" href="./src/assets/error.png" />
+          <title>Error</title>
         </Helmet>
         <div className="m-auto justify-center items-center ">
           <h1 className="text-4xl pb-6 font-thin">{parseText(error.title)}</h1>

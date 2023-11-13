@@ -52,7 +52,7 @@ export async function openOverlay(
   console.log('size:', size, 'Pos', pos)
   view.setBounds({ width: size.width, height: size.height, x: pos.x, y: pos.y })
   view.webContents.focus()
-  //   view.webContents.openDevTools({ mode: 'detach' })
+  // view.webContents.openDevTools({ mode: 'detach' })
 }
 
 export async function isOverlay(view: BrowserView) {
@@ -61,14 +61,13 @@ export async function isOverlay(view: BrowserView) {
 }
 
 export async function getOverlay(win: BrowserWindow) {
-  let overlay = null
-
   const browserViews = win.getBrowserViews()
   for (const v of browserViews) {
-    if ((await v.webContents.executeJavaScript('window.tagId')) == 'overlay') {
-      ;(overlay as any) = v
-      break
-    }
+    try {
+      if ((await v.webContents.executeJavaScript('window.tagId')) == 'overlay') {
+        return v
+      }
+    } catch (e) {}
   }
-  return overlay
+  return null
 }

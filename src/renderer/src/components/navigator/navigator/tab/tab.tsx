@@ -12,8 +12,6 @@ export default function TabBar(props: {
   selectedTab: number
   setSelectedTab: any
 }) {
-  const [favicons, setFavicons] = useState<any>({})
-  // const [currentTabs, setCurrentTabs] = useState<Tab[]>([])
   const [posMap, setPosMap] = useState<Array<number>>([])
   const newTabButton = () => {
     return (
@@ -93,14 +91,10 @@ export default function TabBar(props: {
   }
 
   const handleUpdateTabs = (tabs: Tab[]) => {
-    let newFavicons = favicons
     // let newCurrentTabs = currentTabs
     let newPosMap: number[] = posMap
     let newTabList = {}
     tabs.forEach((tab) => {
-      if (tab.favicon != '') {
-        newFavicons[`${tab.id}`] = tab.favicon
-      }
       if (tab.url.includes('6713de00-4386-4a9f-aeb9-0949b3e71eb7')) {
         const hashIndex = tab.url.indexOf('#')
         const hashString = hashIndex !== -1 ? tab.url.slice(hashIndex) : ''
@@ -118,7 +112,6 @@ export default function TabBar(props: {
 
       // if (newCurrentTabs.includes(tab))
     })
-    setFavicons(newFavicons)
     setPosMap(newPosMap)
     props.setTabs(newTabList)
   }
@@ -223,9 +216,7 @@ export default function TabBar(props: {
                   {posMap.map((id, index) => {
                     let item = props.tabs[id]
                     if (item == undefined) return
-                    // let id = posMap[index]
                     console.log('ID', id)
-                    // let id = `${item.id}`
                     return (
                       <Draggable key={id} draggableId={`${id}`} index={index}>
                         {(provided) => (
@@ -237,7 +228,6 @@ export default function TabBar(props: {
                           >
                             {TabButton({
                               tab: item,
-                              favicons: favicons,
                               key: index,
                               selectedTab: props.selectedTab,
                               setSelectedTab: props.setSelectedTab,
