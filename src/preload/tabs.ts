@@ -41,6 +41,12 @@ let tabs = {
       callback()
     })
     ipcRenderer.send('open-inspect', tabId)
+  },
+  requestSelectedTab: (callback: any) => {
+    ipcRenderer.once('request-selected-tab-reply', (_, tabId: number) => {
+      callback(tabId)
+    })
+    ipcRenderer.send('request-selected-tab')
   }
 }
 

@@ -9,6 +9,8 @@ import { addHistory } from './db'
 import { v4 as uuidv4 } from 'uuid'
 import { getFaviconData } from './favicon'
 import { router } from './url'
+import { createContextMenu } from './contexts'
+import { JSDOM } from 'jsdom'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
@@ -51,31 +53,46 @@ export async function removeTabListeners(view: BrowserView) {
 }
 
 export async function applyTabListeners(view: BrowserView) {
+  // function getWindow() {
+  //   let win = BrowserWindow.fromBrowserView(view)
+  //   if (win === null) return
+  //   return win
+  // }
+  // let header = await getHeader(getWindow()!)
   let win = BrowserWindow.fromBrowserView(view)
   if (win === null) return
   let header = await getHeader(win)
   if (header != null) {
     view.webContents.setMaxListeners(0)
     view.webContents.on('page-title-updated', async () => {
+      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.on('did-start-loading', async () => {
+      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.once('did-stop-loading', async () => {
+      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
 
-    view.webContents.on('context-menu', async (_) => {
-      const { x, y } = screen.getCursorScreenPoint()
-      let pos = {
-        x: x - win!.getPosition()[0],
-        y: y - win!.getPosition()[1]
+    view.webContents.on('context-menu', async (_, params) => {
+      const { x, y } = params
+      const html = await view.webContents.executeJavaScript(
+        `document.elementFromPoint(${x}, ${y}).outerHTML`
+      )
+      const { document } = new JSDOM(html).window
+      const element = document.body.firstChild
+      console.log('ELEM', element.nodeName, x, y)
+      if (`${element.nodeName}` == 'IMG') {
+        createContextMenu(view, 'img')
+      } else {
+        createContextMenu(view, 'body')
       }
-      await openOverlay(win!, 'context', { x: pos.x, y: pos.y }, { width: 100, height: 100 }, true)
     })
     let prevUrls: string[] = []
     view.webContents.on('did-navigate', async (event, url) => {
@@ -94,6 +111,7 @@ export async function applyTabListeners(view: BrowserView) {
       }
     })
     view.webContents.on('page-favicon-updated', async (_, favicons) => {
+      // let win = getWindow()
       const tabs = await getTabs(win!.id, favicons[0])
       header.webContents.send('tabs-updated', tabs)
     })
@@ -106,7 +124,8 @@ export async function createTab(windowId: number, url = '') {
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
-      preload: path.join(__dirname, '../preload/index.js')
+      preload: path.join(__dirname, '../preload/index.js'),
+      sandbox: true
     }
   })
 
@@ -142,7 +161,6 @@ export async function getTabs(windowId: number, favicon = '') {
       canGoForward: boolean
     }
   }[] = []
-
   let win = BrowserWindow.fromId(windowId)
   if (win === null) return []
   for (const elem of win.getBrowserViews()) {
@@ -303,7 +321,7 @@ export async function updateAllWindows() {
   const windows = BrowserWindow.getAllWindows()
   for (const win of windows) {
     if (win == null) return
-    const header = await getHeader(win)
+    let header = await getHeader(win)
     let tabs = await getTabs(win.id, '')
     if (tabs.length == 0) {
       deleteWindow(win.id)
@@ -327,4 +345,8 @@ export async function getSelectedTab(win: BrowserWindow) {
     } catch (e) {}
   }
   return null
+}
+
+export function openInspect(view: BrowserView) {
+  view.webContents.openDevTools({ mode: 'bottom' })
 }

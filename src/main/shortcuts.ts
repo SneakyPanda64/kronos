@@ -1,5 +1,5 @@
 import { BrowserWindow, globalShortcut } from 'electron'
-import { getSelectedTab } from './tab'
+import { getSelectedTab, openInspect } from './tab'
 import { getViewById } from './util'
 
 function getWindow() {
@@ -23,6 +23,6 @@ export async function registerShortcuts() {
     let view = await getView()
     if (view == null) return
     console.log('opening dev tools')
-    view.webContents.openDevTools({ mode: 'bottom' })
+    openInspect(view)
   })
 }

@@ -6,24 +6,26 @@ let LAST_OVERLAY = ''
 let LAST_WINDOW = -1
 
 export async function closeOverlay(win: BrowserWindow) {
-  // let view: BrowserView | null = await getOverlay(win)
-  // if (view == null) {
-  //   return
-  // }
-  // win.removeBrowserView(view)
-  // ;((view as any).webContents as any).destroy()
-  // LAST_OVERLAY = ''
-  // LAST_WINDOW = -1
+  LAST_OVERLAY = ''
+  LAST_WINDOW = -1
+  let view: BrowserView | null = await getOverlay(win)
+  if (view == null) {
+    return
+  }
+  win.removeBrowserView(view)
+  ;((view as any).webContents as any).destroy()
+  console.log('CLOSED OVERLAY')
 }
 
 export async function openOverlay(
   win: BrowserWindow,
   type: string,
   position: { x: number; y: number },
-  size: { width: number; height },
+  size: { width: number; height: number },
   focus: boolean
 ) {
   if (LAST_OVERLAY === type && LAST_WINDOW === win.id) {
+    console.log('moving position')
     let overlay = await getOverlay(win)
     if (overlay == null) return
     overlay.setBounds({
@@ -36,9 +38,6 @@ export async function openOverlay(
   }
   LAST_OVERLAY = type
   LAST_WINDOW = win.id
-  try {
-    await closeOverlay(win)
-  } catch (e) {}
   let view = new BrowserView({
     webPreferences: {
       devTools: true,
@@ -49,7 +48,6 @@ export async function openOverlay(
   })
 
   view.webContents.on('blur', async () => {
-    console.log('BLUR DETECTED, closing overlay')
     await closeOverlay(win)
   })
   win.addBrowserView(view)

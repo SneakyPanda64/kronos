@@ -1,6 +1,7 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './url'
+import { createContextMenu } from './contexts'
 
 const NAVIGATOR_HEIGHT = 80
 
@@ -52,6 +53,9 @@ export async function createHeader(win: BrowserWindow) {
       x: 0,
       y: 0
     })
+  })
+  view.webContents.on('context-menu', async () => {
+    await createContextMenu(view, 'tab')
   })
   // view.webContents.openDevTools({ mode: 'detach' })
 }

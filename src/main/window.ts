@@ -15,12 +15,6 @@ export async function createWindow(
     width: 600,
     height: 600
   }
-  let view = getViewById(tabIds[0] ?? '')
-  console.log('view', view)
-  if (view != null) {
-    size.width = view.getBounds().width
-    size.height = view.getBounds().height
-  }
   const mainWindow = new BrowserWindow({
     width: size.width,
     height: size.height,
@@ -35,7 +29,7 @@ export async function createWindow(
 
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      webSecurity: false
+      sandbox: true
     }
   })
   if (maximised) {
@@ -46,18 +40,17 @@ export async function createWindow(
 
   if (tabIds.length == 0) {
     let tabId = await createTab(mainWindow.id)
-
     await selectTab(tabId!)
   }
 
-  moveTabs(tabIds, mainWindow.id)
+  await moveTabs(tabIds, mainWindow.id)
 
   mainWindow.show()
   let downloads = { '32423432': { filename: 'test.txt' } }
   mainWindow.webContents.session.on('will-download', async () => {
     let overlay = await getOverlay(mainWindow)
     if (overlay == null) return
-
+    console.log('downloads updated')
     overlay.webContents.send('downloads-updated', downloads)
   })
   // mainWindow.on('will-move', () => {

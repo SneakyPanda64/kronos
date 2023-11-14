@@ -49,24 +49,9 @@ export default function SearchPanel() {
     }
     return <div>{searchResult(url)}</div>
   }
-  // const goToUrl = (url: string) => {
-  //   window.indexBridge?.navigation.goToUrl(
-  //     () => {
-  //       console.log('gone to url')
-  //     },
-  //     7,
-  //     'https://google.com'
-  //   )
-  // }
   const queryComponent = (query: string) => {
     return (
-      <div
-        className="flex py-2 hover:bg-s-dark-gray hover:cursor-pointer"
-        onClick={(e) => {
-          // e.preventDefault()
-          // goToUrl(query)
-        }}
-      >
+      <div className="flex py-2 hover:bg-s-dark-gray hover:cursor-pointer" onClick={(e) => {}}>
         <div className="my-auto px-2">
           <FaHistory />
         </div>

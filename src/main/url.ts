@@ -64,7 +64,7 @@ export async function router(view: BrowserView | BrowserWindow, subPath: string)
     // await view.webContents.loadURL('https://google.com/')
     // console.log('URL', process.env['ELECTRON_RENDERER_URL'])
     try {
-      await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {}) // + '#' + subPath)
+      await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath) // + '#' + subPath)
     } catch (e) {
       console.log('ERROR!!!!!!', e)
     }

@@ -9,8 +9,10 @@ import {
   goBack,
   goForward,
   handleMoveTabs,
+  openInspect,
   refreshTab,
-  selectTab
+  selectTab,
+  updateAllWindows
 } from './tab'
 import {
   createWindow,
@@ -41,11 +43,8 @@ app.whenReady().then(() => {
     contents.setWindowOpenHandler((details) => {
       let view = getViewById(contents.id)
       let win = BrowserWindow.fromBrowserView(view!)
-      createTab(win!.id).then((tabId) => {
+      createTab(win!.id, details.url).then((tabId) => {
         if (tabId !== undefined) selectTab(tabId)
-        goToUrl(tabId!, details.url).then(() => {
-          console.log('creating tab')
-        })
       })
       return { action: 'deny' }
     })
@@ -86,6 +85,7 @@ app.whenReady().then(() => {
   ipcMain.on('move-tabs', async (event, tabIds) => {
     console.log('holding tabs', tabIds)
     let moved = await handleMoveTabs(tabIds)
+    await updateAllWindows()
     event.reply('move-tabs-reply', moved)
   })
   ipcMain.on('select-tab', async (_, tabId) => {
@@ -112,6 +112,19 @@ app.whenReady().then(() => {
     await refreshTab(tabId)
     event.reply('refresh-tab-reply')
   })
+  ipcMain.on('request-selected-tab', async (event) => {
+    let win = BrowserWindow.getFocusedWindow()
+    if (win === null) return
+    let tab = await getSelectedTab(win)
+    if (tab === null) return
+    event.reply('request-selected-tab-reply', tab.id)
+  })
+  ipcMain.on('open-inspect', async (event, tabId: number) => {
+    let view = getViewById(tabId)
+    if (view == null) return
+    openInspect(view)
+    event.reply('open-inspect-reply')
+  })
   ipcMain.on('close-window', async (event) => {
     let win = windowFromViewId(event.sender.id)
     if (win === null) return
@@ -130,6 +143,10 @@ app.whenReady().then(() => {
   ipcMain.on('go-to-url', async (event, tabId: number, url: string) => {
     console.log('going to url!', url)
     await goToUrl(tabId, url)
+    await updateAllWindows()
+    await updateAllWindows()
+    console.log('went to url')
+
     event.reply('go-to-url-reply')
   })
   ipcMain.on('open-settings', async (event, type: string) => {
