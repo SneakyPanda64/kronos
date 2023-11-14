@@ -20,6 +20,7 @@
     "build:linux": "electron-vite build && electron-builder --linux --config"
   },
   "dependencies": {
+    "@cliqz/adblocker-electron": "^1.26.12",
     "@coreui/icons": "^3.0.1",
     "@coreui/icons-react": "^2.2.1",
     "@electron-toolkit/preload": "^2.0.0",

@@ -18,7 +18,7 @@ export async function getHeader(win: BrowserWindow) {
   return header
 }
 
-export async function createHeader(win: BrowserWindow) {
+export async function createHeader(win: BrowserWindow, privateWindow = false) {
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
@@ -34,8 +34,8 @@ export async function createHeader(win: BrowserWindow) {
   view.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: NAVIGATOR_HEIGHT })
 
   view.setAutoResize({ width: true, height: false })
-
-  await router(view, '')
+  console.log('PRIVATE', privateWindow)
+  await router(view, privateWindow ? '?id=none&private=true' : '')
   win.on('unmaximize', () => {
     console.log('left full screen')
     view.setBounds({

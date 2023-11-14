@@ -56,7 +56,7 @@ app.whenReady().then(() => {
 
   ipcMain.on(
     'create-window',
-    async (event, tabIds: number[], onMouse = false, maximised = false) => {
+    async (event, tabIds: number[], onMouse = false, maximised = false, privateWindow = false) => {
       console.log('creating new window')
       let pos = {
         x: 0,
@@ -67,7 +67,7 @@ app.whenReady().then(() => {
         pos.x = x - 100
         pos.y = y - 100
       }
-      await createWindow(tabIds, pos, maximised)
+      await createWindow(tabIds, pos, maximised, privateWindow)
       event.reply('create-window-reply')
     }
   )

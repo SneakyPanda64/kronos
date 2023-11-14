@@ -2,13 +2,15 @@ import { BrowserWindow, shell, screen } from 'electron'
 import { createTab, moveTabs, selectTab, updateAllWindows } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
-import { getViewById } from './util'
-import { closeOverlay, getOverlay } from './overlay'
+import { getOverlay } from './overlay'
+import { readFileSync, writeFileSync } from 'fs'
 
+import { ElectronBlocker, fullLists, Request } from '@cliqz/adblocker-electron'
 export async function createWindow(
   tabIds: number[],
   position: { x: number; y: number },
-  maximised = false
+  maximised = false,
+  privateWindow = false
 ): Promise<void> {
   console.log(position)
   let size = {
@@ -32,11 +34,9 @@ export async function createWindow(
       sandbox: true
     }
   })
-  if (maximised) {
-    mainWindow.maximize()
-  }
-
-  await createHeader(mainWindow)
+  await loadBlocker(mainWindow)
+  console.log('CREATING WINDOW WITH', privateWindow)
+  await createHeader(mainWindow, privateWindow)
 
   if (tabIds.length == 0) {
     let tabId = await createTab(mainWindow.id)
@@ -53,9 +53,6 @@ export async function createWindow(
     console.log('downloads updated')
     overlay.webContents.send('downloads-updated', downloads)
   })
-  // mainWindow.on('will-move', () => {
-  //   closeOverlay(mainWindow)
-  // })
 }
 
 export function deleteWindow(windowId: number) {
@@ -120,4 +117,45 @@ export function moveWindow(windowId: number, position: { x: number; y: number })
     win.setPosition(position.x, position.y)
   }
   win.setSize(win.getSize()[0] + 10, win.getSize()[1] + 10)
+}
+
+export async function loadBlocker(win: BrowserWindow) {
+  const blocker = await ElectronBlocker.fromLists(
+    fetch,
+    fullLists,
+    {
+      enableCompression: true
+    },
+    {
+      path: 'engine.bin',
+      read: async (...args) => readFileSync(...args),
+      write: async (...args) => writeFileSync(...args)
+    }
+  )
+
+  blocker.enableBlockingInSession(win.webContents.session)
+
+  // blocker.on('request-blocked', (request: Request) => {
+  //   console.log('blocked', request.tabId, request.url)
+  // })
+
+  // blocker.on('request-redirected', (request: Request) => {
+  //   console.log('redirected', request.tabId, request.url)
+  // })
+
+  // blocker.on('request-whitelisted', (request: Request) => {
+  //   console.log('whitelisted', request.tabId, request.url)
+  // })
+
+  // blocker.on('csp-injected', (request: Request) => {
+  //   console.log('csp', request.url)
+  // })
+
+  // blocker.on('script-injected', (script: string, url: string) => {
+  //   console.log('script', script.length, url)
+  // })
+
+  // blocker.on('style-injected', (style: string, url: string) => {
+  //   console.log('style', style.length, url)
+  // })
 }

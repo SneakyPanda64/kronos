@@ -1,11 +1,17 @@
 import { ipcRenderer } from 'electron'
 
 let window = {
-  createWindow: (callback: any, tabIds: number[], onMouse = false, maximised = false) => {
+  createWindow: (
+    callback: any,
+    tabIds: number[],
+    onMouse = false,
+    maximised = false,
+    privateWindow = false
+  ) => {
     ipcRenderer.once('create-window-reply', (_) => {
       callback()
     })
-    ipcRenderer.send('create-window', tabIds, onMouse, maximised)
+    ipcRenderer.send('create-window', tabIds, onMouse, maximised, privateWindow)
   },
   closeWindow: () => {
     ipcRenderer.send('close-window')

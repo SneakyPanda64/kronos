@@ -22,13 +22,27 @@ export default function MenuPanel() {
 
       title: 'New window',
       keybind: 'Ctrl+N',
-      action: () => {}
+      action: () => {
+        window.indexBridge?.window.createWindow(() => {
+          closeOverlay()
+        }, [])
+      }
     },
     {
       type: 'action',
       title: 'New private window',
       keybind: 'Ctrl+Shift+A',
-      action: () => {}
+      action: () => {
+        window.indexBridge?.window.createWindow(
+          () => {
+            closeOverlay()
+          },
+          [],
+          false,
+          false,
+          true
+        )
+      }
     }
   ]
   const secondaryItems = [
@@ -42,17 +56,17 @@ export default function MenuPanel() {
         }, 'history')
       }
     },
-    {
-      type: 'link',
-      title: 'Downloads',
-      link: 'downloads',
-      keybind: 'Ctrl+J',
-      action: () => {
-        window.indexBridge?.settings.openSettings(() => {
-          closeOverlay()
-        }, 'downloads')
-      }
-    },
+    // {
+    //   type: 'link',
+    //   title: 'Downloads',
+    //   link: 'downloads',
+    //   keybind: 'Ctrl+J',
+    //   action: () => {
+    //     window.indexBridge?.settings.openSettings(() => {
+    //       closeOverlay()
+    //     }, 'downloads')
+    //   }
+    // },
     {
       type: 'link',
       title: 'Settings',
