@@ -55,19 +55,3 @@ export function getViewById(id: number): BrowserView | null {
   }
   return found
 }
-
-export async function router(view: BrowserView | BrowserWindow, subPath: string) {
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    // await view.webContents.loadURL('https://google.com/')
-    // console.log('URL', process.env['ELECTRON_RENDERER_URL'])
-    try {
-      await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {}) // + '#' + subPath)
-    } catch (e) {
-      console.log('ERROR!!!!!!', e)
-    }
-  } else {
-    await view.webContents.loadURL(
-      'file://' + path.join(__dirname, `../renderer/index.html#${subPath}`)
-    )
-  }
-}

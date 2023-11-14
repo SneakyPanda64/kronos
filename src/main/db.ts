@@ -36,6 +36,8 @@ export async function getHistory() {
           if ((entry as any).url !== undefined && (entry as any).url !== '') {
             const favicon = await getFaviconData((entry as any).url ?? '')
             return { id, url: (entry as any).url, title: (entry as any).title, favicon }
+          } else if ((entry as any).query !== undefined && (entry as any).query !== '') {
+            return { id, query: (entry as any).query, title: (entry as any).title }
           }
           return null
         })

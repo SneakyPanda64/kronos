@@ -6,6 +6,7 @@ import { window } from './window'
 import { overlay } from './overlay'
 import { settings } from './settings'
 import { history } from './history'
+import { downloads } from './downloads'
 console.log('loaded preload')
 
 let indexBridge = {
@@ -15,7 +16,8 @@ let indexBridge = {
   window,
   overlay,
   settings,
-  history
+  history,
+  downloads
 }
 
 contextBridge.exposeInMainWorld('indexBridge', indexBridge)

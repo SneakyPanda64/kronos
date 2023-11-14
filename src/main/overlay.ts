@@ -1,28 +1,41 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
-import { router } from './util'
+import { router } from './url'
 
 let LAST_OVERLAY = ''
+let LAST_WINDOW = -1
 
 export async function closeOverlay(win: BrowserWindow) {
-  console.log('closing overlay')
   // let view: BrowserView | null = await getOverlay(win)
-  // if (view == null) return
+  // if (view == null) {
+  //   return
+  // }
   // win.removeBrowserView(view)
   // ;((view as any).webContents as any).destroy()
   // LAST_OVERLAY = ''
+  // LAST_WINDOW = -1
 }
 
 export async function openOverlay(
   win: BrowserWindow,
   type: string,
   position: { x: number; y: number },
+  size: { width: number; height },
   focus: boolean
 ) {
-  if (LAST_OVERLAY === type) {
+  if (LAST_OVERLAY === type && LAST_WINDOW === win.id) {
+    let overlay = await getOverlay(win)
+    if (overlay == null) return
+    overlay.setBounds({
+      width: size.width,
+      height: size.height,
+      x: overlay.getBounds().x,
+      y: overlay.getBounds().y
+    })
     return
   }
   LAST_OVERLAY = type
+  LAST_WINDOW = win.id
   try {
     await closeOverlay(win)
   } catch (e) {}
@@ -34,31 +47,12 @@ export async function openOverlay(
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
+
   view.webContents.on('blur', async () => {
+    console.log('BLUR DETECTED, closing overlay')
     await closeOverlay(win)
   })
   win.addBrowserView(view)
-  let types = {
-    menu: {
-      size: {
-        width: 250,
-        height: 500
-      }
-    },
-    downloads: {
-      size: {
-        width: 100,
-        height: 500
-      }
-    },
-    search: {
-      size: {
-        width: Math.round(win.getBounds().width / 2),
-        height: 200
-      }
-    }
-  }
-  let size = { width: types[type].size.width, height: types[type].size.height }
   let pos = {
     x: Math.round(position.x),
     y: Math.round(position.y)
@@ -74,19 +68,26 @@ export async function openOverlay(
   if (focus) {
     view.webContents.focus()
   }
-  view.webContents.openDevTools({ mode: 'detach' })
+  // view.webContents.openDevTools({ mode: 'detach' })
 }
 
 export async function isOverlay(view: BrowserView) {
-  if (view == null || view.webContents == null) return
-  return (await view.webContents.executeJavaScript('window.tagId')) == 'overlay'
+  try {
+    if (view == null || view.webContents == null || view.webContents.isDestroyed()) return
+    return (await view.webContents.executeJavaScript('window.tagId')) == 'overlay'
+  } catch (e) {
+    return null
+  }
 }
 
 export async function getOverlay(win: BrowserWindow) {
   const browserViews = win.getBrowserViews()
   for (const v of browserViews) {
     try {
-      if ((await v.webContents.executeJavaScript('window.tagId')) == 'overlay') {
+      if (
+        !v.webContents.isDestroyed() &&
+        (await v.webContents.executeJavaScript('window.tagId')) == 'overlay'
+      ) {
         return v
       }
     } catch (e) {}

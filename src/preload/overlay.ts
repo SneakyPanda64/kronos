@@ -1,11 +1,17 @@
 import { ipcRenderer } from 'electron'
 
 let overlay = {
-  openOverlay: (callback: any, type: string, position: { x: number; y: number }, focus = true) => {
+  openOverlay: (
+    callback: any,
+    type: string,
+    position: { x: number; y: number },
+    size: { width: number; height: number },
+    focus = true
+  ) => {
     ipcRenderer.once('open-overlay-reply', (_) => {
       callback()
     })
-    ipcRenderer.send('open-overlay', type, position, focus)
+    ipcRenderer.send('open-overlay', type, position, size, focus)
   },
   closeOverlay: (callback: any) => {
     ipcRenderer.once('close-overlay-reply', (_) => {

@@ -1,7 +1,9 @@
 import { BrowserWindow, shell, screen } from 'electron'
-import { createTab, moveTabs, selectTab } from './tab'
+import { createTab, moveTabs, selectTab, updateAllWindows } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
+import { getViewById } from './util'
+import { closeOverlay, getOverlay } from './overlay'
 
 export async function createWindow(
   tabIds: number[],
@@ -9,17 +11,28 @@ export async function createWindow(
   maximised = false
 ): Promise<void> {
   console.log(position)
-  const mainWindow = new BrowserWindow({
+  let size = {
     width: 600,
-    height: 600,
+    height: 600
+  }
+  let view = getViewById(tabIds[0] ?? '')
+  console.log('view', view)
+  if (view != null) {
+    size.width = view.getBounds().width
+    size.height = view.getBounds().height
+  }
+  const mainWindow = new BrowserWindow({
+    width: size.width,
+    height: size.height,
     minHeight: 200,
-    minWidth: 500,
+    minWidth: 550,
     x: position.x,
     y: position.y,
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     frame: false,
+
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       webSecurity: false
@@ -40,11 +53,16 @@ export async function createWindow(
   moveTabs(tabIds, mainWindow.id)
 
   mainWindow.show()
+  let downloads = { '32423432': { filename: 'test.txt' } }
+  mainWindow.webContents.session.on('will-download', async () => {
+    let overlay = await getOverlay(mainWindow)
+    if (overlay == null) return
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
+    overlay.webContents.send('downloads-updated', downloads)
   })
+  // mainWindow.on('will-move', () => {
+  //   closeOverlay(mainWindow)
+  // })
 }
 
 export function deleteWindow(windowId: number) {

@@ -14,7 +14,7 @@ export default function SearchPage() {
     document.title = 'New Tab'
   })
   return (
-    <div className="flex w-screen h-screen select-none cursor-text">
+    <div className="flex w-screen h-screen select-none cursor-text overflow-clip">
       <Helmet>
         <link rel="icon" href="./src/assets/google.png" />
       </Helmet>

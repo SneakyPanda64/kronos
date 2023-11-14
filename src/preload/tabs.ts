@@ -35,8 +35,13 @@ let tabs = {
       callback(moved)
     })
     ipcRenderer.send('move-tabs', tabIds)
+  },
+  openInspect: (callback: any, tabId: number) => {
+    ipcRenderer.once('open-inspect-reply', (_) => {
+      callback()
+    })
+    ipcRenderer.send('open-inspect', tabId)
   }
 }
-// module.exports = tabs
 
 export { tabs }

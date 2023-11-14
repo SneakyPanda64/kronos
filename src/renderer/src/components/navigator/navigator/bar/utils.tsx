@@ -5,14 +5,26 @@ export default function Utils() {
   const icons = [
     {
       icon: GiHamburgerMenu,
-      type: 'menu'
+      type: 'menu',
+      size: {
+        width: 250,
+        height: 500
+      }
     },
     {
       icon: BiDownload,
-      type: 'downloads'
+      type: 'downloads',
+      size: {
+        width: 100,
+        height: 200
+      }
     }
   ]
-  const handleOpenOverlay = (type: string, position: { x: number; y: number }) => {
+  const handleOpenOverlay = (
+    type: string,
+    position: { x: number; y: number },
+    size: { width: number; height: number }
+  ) => {
     console.log('POS', position)
     window.indexBridge?.overlay.openOverlay(
       () => {
@@ -20,7 +32,8 @@ export default function Utils() {
       },
 
       type,
-      position
+      position,
+      size
     )
   }
   return (
@@ -31,10 +44,14 @@ export default function Utils() {
             <div
               className="mt-1 hover:bg-s-light-gray p-1 rounded-lg hover:text-white"
               onClick={(e) =>
-                handleOpenOverlay(item.type, {
-                  x: e.currentTarget.getBoundingClientRect().right,
-                  y: e.currentTarget.getBoundingClientRect().bottom
-                })
+                handleOpenOverlay(
+                  item.type,
+                  {
+                    x: e.currentTarget.getBoundingClientRect().right,
+                    y: e.currentTarget.getBoundingClientRect().bottom
+                  },
+                  item.size
+                )
               }
             >
               <item.icon size={20} />

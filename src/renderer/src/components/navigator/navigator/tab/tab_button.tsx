@@ -11,7 +11,6 @@ export default function TabButton(props: {
   handleTab: any
   handleDeleteTab: any
 }) {
-  console.log(props.tab.favicon)
   return (
     <div className="w-16 min-w-max flex" key={props.key}>
       <div

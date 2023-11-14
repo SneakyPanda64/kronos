@@ -19,11 +19,12 @@ import {
   moveWindow,
   toggleMaximiseWindow
 } from './window'
-import { goToUrl } from './url'
-import { getViewById, router, windowFromViewId } from './util'
+import { goToUrl, router } from './url'
+import { getViewById, windowFromViewId } from './util'
 import { closeOverlay, getOverlay, openOverlay } from './overlay'
 import { encode } from 'js-base64'
 import { getHistory } from './db'
+import { registerShortcuts } from './shortcuts'
 // import { addHistory, getHistory } from './db'
 // import { createCollection, createDatabase, insertHistory } from './db'
 
@@ -32,9 +33,22 @@ const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 app.whenReady().then(() => {
   // const db = new sqlite3.Database('./databases/history.db')
   electronApp.setAppUserModelId('com.electron')
-
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
+  })
+
+  app.on('web-contents-created', (_, contents) => {
+    contents.setWindowOpenHandler((details) => {
+      let view = getViewById(contents.id)
+      let win = BrowserWindow.fromBrowserView(view!)
+      createTab(win!.id).then((tabId) => {
+        if (tabId !== undefined) selectTab(tabId)
+        goToUrl(tabId!, details.url).then(() => {
+          console.log('creating tab')
+        })
+      })
+      return { action: 'deny' }
+    })
   })
 
   app.on('browser-window-created', (_, window) => {
@@ -72,8 +86,6 @@ app.whenReady().then(() => {
   ipcMain.on('move-tabs', async (event, tabIds) => {
     console.log('holding tabs', tabIds)
     let moved = await handleMoveTabs(tabIds)
-    console.log('fn move window')
-
     event.reply('move-tabs-reply', moved)
   })
   ipcMain.on('select-tab', async (_, tabId) => {
@@ -81,7 +93,6 @@ app.whenReady().then(() => {
     await selectTab(tabId)
   })
   ipcMain.on('new-tab', async (event, url: string) => {
-    console.log('attempt NEW TAB')
     let win = windowFromViewId(event.sender.id)
     if (win === null) return
     let tabId = await createTab(win.id)
@@ -95,7 +106,6 @@ app.whenReady().then(() => {
   })
   ipcMain.on('delete-tab', async (event, tabId: number) => {
     await deleteTab(tabId)
-    console.log('DONE DELETING!!!')
     event.reply('delete-tab-reply')
   })
   ipcMain.on('refresh-tab', async (event, tabId: number) => {
@@ -158,17 +168,22 @@ app.whenReady().then(() => {
   })
   ipcMain.on(
     'open-overlay',
-    async (event, type: string, position: { x: number; y: number }, focus: boolean) => {
+    async (
+      event,
+      type: string,
+      position: { x: number; y: number },
+      size: { width: number; height: number },
+      focus: boolean
+    ) => {
       let win = windowFromViewId(event.sender.id)
       if (win === null) return
-      await openOverlay(win, type, position, focus)
+      await openOverlay(win, type, position, size, focus)
       event.reply('open-overlay-reply')
     }
   )
   ipcMain.on('close-overlay', async (event) => {
     let win = windowFromViewId(event.sender.id)
     if (win === null) return
-    console.log('attempt close!')
     await closeOverlay(win)
     event.reply('close-overlay-reply')
   })
@@ -182,10 +197,10 @@ app.whenReady().then(() => {
   })
   ipcMain.on('get-history', async (event) => {
     let history = await getHistory()
-    // console.log('history', history)
     event.reply('get-history-reply', history)
   })
   createWindow([], { x: 0, y: 0 })
+  registerShortcuts()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow([], { x: 0, y: 0 }, false)

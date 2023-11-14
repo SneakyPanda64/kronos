@@ -1,9 +1,8 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
-import { router } from './util'
+import { router } from './url'
 
 const NAVIGATOR_HEIGHT = 80
-const WINDOW_WIDTH = 600
 
 export async function getHeader(win: BrowserWindow) {
   let header = win.getBrowserViews()[0]
@@ -31,7 +30,7 @@ export async function createHeader(win: BrowserWindow) {
   view.webContents.executeJavaScript("window.tagId = 'header'")
   win.addBrowserView(view)
 
-  view.setBounds({ x: 0, y: 0, width: WINDOW_WIDTH, height: NAVIGATOR_HEIGHT })
+  view.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: NAVIGATOR_HEIGHT })
 
   view.setAutoResize({ width: true, height: false })
 
@@ -54,5 +53,5 @@ export async function createHeader(win: BrowserWindow) {
       y: 0
     })
   })
-  view.webContents.openDevTools({ mode: 'detach' })
+  // view.webContents.openDevTools({ mode: 'detach' })
 }

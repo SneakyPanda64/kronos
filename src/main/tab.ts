@@ -1,13 +1,14 @@
-import { BrowserView, BrowserWindow, screen } from 'electron'
+import { BrowserView, BrowserWindow, Menu, screen } from 'electron'
 import path from 'path'
-import { getFavicon, getViewById, router } from './util'
+import { getFavicon, getViewById } from './util'
 import { encode } from 'js-base64'
 import { deleteWindow } from './window'
 import { getHeader } from './header'
-import { getOverlay, isOverlay } from './overlay'
+import { closeOverlay, getOverlay, isOverlay, openOverlay } from './overlay'
 import { addHistory } from './db'
 import { v4 as uuidv4 } from 'uuid'
 import { getFaviconData } from './favicon'
+import { router } from './url'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
@@ -34,8 +35,10 @@ export async function deleteTab(tabId: number) {
   if (view == null) return
   let win = BrowserWindow.fromBrowserView(view)
   if (win == null) return
+  await removeTabListeners(view)
   win.removeBrowserView(view)
   ;(view.webContents as any).destroy()
+
   const header = await getHeader(win)
   if (header != null) {
     const tabs = await getTabs(win.id)
@@ -43,11 +46,16 @@ export async function deleteTab(tabId: number) {
   }
 }
 
+export async function removeTabListeners(view: BrowserView) {
+  view.webContents.removeAllListeners()
+}
+
 export async function applyTabListeners(view: BrowserView) {
   let win = BrowserWindow.fromBrowserView(view)
   if (win === null) return
   let header = await getHeader(win)
   if (header != null) {
+    view.webContents.setMaxListeners(0)
     view.webContents.on('page-title-updated', async () => {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
@@ -56,9 +64,18 @@ export async function applyTabListeners(view: BrowserView) {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
-    view.webContents.on('did-stop-loading', async () => {
+    view.webContents.once('did-stop-loading', async () => {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
+    })
+
+    view.webContents.on('context-menu', async (_) => {
+      const { x, y } = screen.getCursorScreenPoint()
+      let pos = {
+        x: x - win!.getPosition()[0],
+        y: y - win!.getPosition()[1]
+      }
+      await openOverlay(win!, 'context', { x: pos.x, y: pos.y }, { width: 100, height: 100 }, true)
     })
     let prevUrls: string[] = []
     view.webContents.on('did-navigate', async (event, url) => {
@@ -104,14 +121,12 @@ export async function createTab(windowId: number, url = '') {
   await applyTabListeners(view)
   if (url === '') {
     let urlHash = encode('‎', true)
-    // console.log(urlHash)
-    await router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
+    router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
     focusSearch(windowId)
   } else {
-    // console.log('loading url')
     await view.webContents.loadURL(url)
   }
-  view.webContents.openDevTools({ mode: 'detach' })
+  // view.webContents.openDevTools({ mode: 'detach' })
   return view.webContents.id
 }
 
@@ -158,11 +173,6 @@ export async function getTabs(windowId: number, favicon = '') {
         if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
           tab.url = ''
         }
-        // if (favicon !== undefined) tab.favicon = favicon
-        // if (findFavicon) {
-        //   let favicon = await getFavicon(elem)
-        //   tab.favicon = favicon
-        // }
         tabs.push(tab)
       } catch (e) {
         console.log('error occured', e)

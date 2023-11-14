@@ -1,9 +1,11 @@
 import { AxiosError, default as axios } from 'axios'
-import { getFavicon, getViewById, router } from './util'
+import { getViewById } from './util'
 import { encode } from 'js-base64'
-// import { addHistory } from './db'
 import { v4 as uuidv4 } from 'uuid'
-import { addHistory, addQueryHistory } from './db'
+import { addQueryHistory } from './db'
+import { BrowserView, BrowserWindow } from 'electron'
+import { is } from '@electron-toolkit/utils'
+import path from 'path'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
@@ -50,17 +52,25 @@ export async function goToUrl(tabId: number, url: string) {
         timestamp: Math.floor(Date.now() / 1000)
       })
     }
-    // let favicon = await getFavicon(view)
-    // addHistory({
-    //   id: `${uuidv4()}`,
-    //   favicon: favicon,
-    //   title: view.webContents.getTitle(),
-    //   url: url,
-    //   timestamp: Math.floor(Date.now() / 1000)
-    // })
   } else {
     const urlHash = encode(url, true)
     await router(view, `error?id=${errorId}&url=${urlHash}&verify=${VERIFY_ID}`)
     // view.webContents.openDevTools({ mode: 'detach' })
+  }
+}
+
+export async function router(view: BrowserView | BrowserWindow, subPath: string) {
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    // await view.webContents.loadURL('https://google.com/')
+    // console.log('URL', process.env['ELECTRON_RENDERER_URL'])
+    try {
+      await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath, {}) // + '#' + subPath)
+    } catch (e) {
+      console.log('ERROR!!!!!!', e)
+    }
+  } else {
+    await view.webContents.loadURL(
+      'file://' + path.join(__dirname, `../renderer/index.html#${subPath}`)
+    )
   }
 }
