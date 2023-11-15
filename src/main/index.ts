@@ -27,6 +27,9 @@ import { closeOverlay, getOverlay, openOverlay } from './overlay'
 import { encode } from 'js-base64'
 import { getHistory } from './db'
 import { registerShortcuts } from './shortcuts'
+import axios from 'axios'
+import { auth } from '../preload/auth'
+import { registerUser } from './auth'
 // import { addHistory, getHistory } from './db'
 // import { createCollection, createDatabase, insertHistory } from './db'
 
@@ -215,6 +218,12 @@ app.whenReady().then(() => {
   ipcMain.on('get-history', async (event) => {
     let history = await getHistory()
     event.reply('get-history-reply', history)
+  })
+  ipcMain.on('register-user', async (event, email: string, password: string) => {
+    console.log(email, password)
+    let error = registerUser(email, password)
+    return error
+    // http://localhost:3000/api
   })
   createWindow([], { x: 100, y: 100 })
   registerShortcuts()

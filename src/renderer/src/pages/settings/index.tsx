@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import DownloadsPage from './pages/downloads'
 import HistoryPage from './pages/history'
-import SyncPage from './pages/sync'
+import SyncPage from './pages/sync/sync'
 import Sidebar from './sidebar/sidebar'
 import SettingsPage from './pages/settings'
 import Helmet from 'react-helmet'

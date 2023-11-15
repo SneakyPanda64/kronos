@@ -56,11 +56,5 @@ export async function createHeader(win: BrowserWindow, privateWindow = false) {
       y: 0
     })
   })
-  win.on('resized', async () => {
-    let header = await getHeader(win)
-    if (header == null) return
-    let tabs = getTabs(win.id)
-    header.webContents.send('tabs-updated', tabs)
-  })
   // view.webContents.openDevTools({ mode: 'detach' })
 }
