@@ -49,10 +49,10 @@ export default function HistoryPage() {
         key={item.id}
         className="bg-s-dark-gray my-2 p-4 rounded-xl hover:bg-s-blue hover:bg-opacity-20 hover:cursor-pointer"
       >
-        <div className="flex justify-between">
-          <div className="flex">
+        <div className="grid grid-cols-2">
+          <div className="flex truncate w-2/3">
             <img
-              className={`w-4 h-4 ml-1 mr-2 my-auto select-none`}
+              className={`w-4 h-4 ml-1 mr-2 my-auto select-none `}
               src={`data:image/jpeg;charset=utf-8;base64,${item.favicon}`}
               style={{ display: 'none' }}
               width={15}

@@ -117,7 +117,7 @@ export default function TabBar(props: {
   }
 
   const containerRef = useRef(null)
-  const [isOverflow, setIsOverflow] = useState(false)
+  // const [isOverflow, setIsOverflow] = useState(false)
   const scrollOffset = (offset: number) => {
     ;(containerRef.current as any).scrollLeft += offset
   }
@@ -131,13 +131,13 @@ export default function TabBar(props: {
     ;(containerRef.current as any).addEventListener('wheel', handleMouseWheel)
   }, [])
 
-  useEffect(() => {
-    try {
-      setIsOverflow(
-        ((containerRef.current as any).scrollWidth ?? 0) > (containerRef.current as any).clientWidth
-      )
-    } catch (e) {}
-  }, [props.tabs])
+  // useEffect(() => {
+  //   try {
+  //     setIsOverflow(
+  //       ((containerRef.current as any).scrollWidth ?? 0) > (containerRef.current as any).clientWidth
+  //     )
+  //   } catch (e) {}
+  // }, [props.tabs])
   async function handleOnDragEnd(result) {
     if (!result.destination) {
       console.log('attemp create window', result.draggableId)
@@ -194,7 +194,7 @@ export default function TabBar(props: {
   }
   return (
     <div className="flex h-[50vh]">
-      {isOverflow ? (
+      {/* {isOverflow ? (
         <div
           className="my-auto mr-2 hidden md:block"
           onClick={() => {
@@ -205,7 +205,7 @@ export default function TabBar(props: {
         </div>
       ) : (
         <></>
-      )}
+      )} */}
 
       <div ref={containerRef} className=" overflow-x-hidden  w-[70vw] overflow-y-hidden flex">
         <div className="flex">
@@ -244,15 +244,15 @@ export default function TabBar(props: {
               )}
             </Droppable>
           </DragDropContext>
-          {!isOverflow ? (
-            <div className="">{newTabButton()}</div>
-          ) : (
-            <div className="block mr-5 md:hidden md:mr-0">{newTabButton()}</div>
-          )}
+          {/* {!isOverflow ? ( */}
+          <div className="">{newTabButton()}</div>
+          {/* ) : ( */}
+          {/* <div className="block mr-5 md:hidden md:mr-0">{newTabButton()}</div> */}
+          {/* )} */}
         </div>
         <div className="w-full draggable"></div>
       </div>
-      {isOverflow ? (
+      {/* {isOverflow ? (
         <div className="my-auto ml-2 hidden md:block">
           <BiSolidRightArrow
             onClick={() => {
@@ -264,7 +264,7 @@ export default function TabBar(props: {
       ) : (
         <></>
       )}
-      {isOverflow ? <div className="hidden md:block">{newTabButton()}</div> : <></>}
+      {isOverflow ? <div className="hidden md:block">{newTabButton()}</div> : <></>} */}
     </div>
   )
 }

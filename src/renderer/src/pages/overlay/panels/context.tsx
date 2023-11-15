@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LuInspect } from 'react-icons/lu'
-import { FaSave } from 'react-icons/fa'
+import { FaBarsStaggered } from 'react-icons/fa6'
 import { IoMdClose } from 'react-icons/io'
 import { BiCopy, BiExpandAlt, BiSave } from 'react-icons/bi'
 interface ContextButton {
@@ -19,7 +18,8 @@ const buttons: ContextButton[] = [
         window.indexBridge?.tabs.openInspect(() => {}, tabId)
       })
     },
-    icon: <LuInspect />
+    icon: <FaBarsStaggered />
+    // icon: <LuInspect />
   },
   {
     id: 'close-window',

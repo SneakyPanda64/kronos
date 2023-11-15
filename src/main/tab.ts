@@ -95,6 +95,9 @@ export async function applyTabListeners(view: BrowserView) {
       }
     })
     let prevUrls: string[] = []
+    view.webContents.on('did-fail-load', (e, errorCode) => {
+      console.log('FAILED', errorCode)
+    })
     view.webContents.on('did-navigate', async (event, url) => {
       if (!prevUrls.includes(url)) {
         console.log('new NAVIGATED!')
@@ -140,7 +143,7 @@ export async function createTab(windowId: number, url = '') {
   if (url === '') {
     let urlHash = encode('‎', true)
     router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
-    // focusSearch(windowId)
+    focusSearch(windowId)
   } else {
     await view.webContents.loadURL(url)
   }
@@ -172,7 +175,7 @@ export async function getTabs(windowId: number, favicon = '') {
       try {
         let favicon_url = await getFavicon(elem)
         let fav = await getFaviconData(
-          elem.webContents.getURL(),
+          elem.webContents.getURL() === null ? '' : elem.webContents.getURL(),
           favicon !== '' ? favicon : favicon_url
         )
         // console.log('FAVICON LENGTH', fav.length)

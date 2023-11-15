@@ -27,7 +27,9 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
               query: removeProtocol(item.query ?? '')
             }
       )
-      .filter((item) => (item.url !== undefined ? !item.url.includes('google.com') : item.query))
+      .filter((item) =>
+        item.url !== undefined ? !item.url.includes('duckduckgo.com') : item.query
+      )
   }
   const fuse = new Fuse(history, options)
   const urlFuse = new Fuse(urlHistory, {

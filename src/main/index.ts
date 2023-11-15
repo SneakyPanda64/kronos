@@ -216,7 +216,7 @@ app.whenReady().then(() => {
     let history = await getHistory()
     event.reply('get-history-reply', history)
   })
-  createWindow([], { x: 0, y: 0 })
+  createWindow([], { x: 100, y: 100 })
   registerShortcuts()
 
   app.on('activate', function () {

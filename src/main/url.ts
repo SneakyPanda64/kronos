@@ -38,7 +38,7 @@ export async function goToUrl(tabId: number, url: string) {
     } else {
       query = url
 
-      url = `https://google.com/search?q=${url}`
+      url = `https://duckduckgo.com/?q=${url}`
     }
   } else {
     errorId = await resolveUrl(url)
@@ -61,12 +61,10 @@ export async function goToUrl(tabId: number, url: string) {
 
 export async function router(view: BrowserView | BrowserWindow, subPath: string) {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    // await view.webContents.loadURL('https://google.com/')
-    // console.log('URL', process.env['ELECTRON_RENDERER_URL'])
     try {
       await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath) // + '#' + subPath)
     } catch (e) {
-      console.log('ERROR!!!!!!', e)
+      console.log('error with router', e)
     }
   } else {
     await view.webContents.loadURL(

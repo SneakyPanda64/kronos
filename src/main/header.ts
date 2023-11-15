@@ -2,6 +2,7 @@ import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './url'
 import { createContextMenu } from './contexts'
+import { getTabs } from './tab'
 
 const NAVIGATOR_HEIGHT = 80
 
@@ -10,9 +11,11 @@ export async function getHeader(win: BrowserWindow) {
 
   const browserViews = win.getBrowserViews()
   for (const v of browserViews) {
-    if ((await v.webContents.executeJavaScript('window.tagId')) == 'header') {
-      header = v
-      break
+    if (v !== null && v.webContents !== null && !v.webContents.isDestroyed()) {
+      if ((await v.webContents.executeJavaScript('window.tagId')) == 'header') {
+        header = v
+        break
+      }
     }
   }
   return header
@@ -34,7 +37,6 @@ export async function createHeader(win: BrowserWindow, privateWindow = false) {
   view.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: NAVIGATOR_HEIGHT })
 
   view.setAutoResize({ width: true, height: false })
-  console.log('PRIVATE', privateWindow)
   await router(view, privateWindow ? '?id=none&private=true' : '')
   win.on('unmaximize', () => {
     console.log('left full screen')
@@ -54,8 +56,11 @@ export async function createHeader(win: BrowserWindow, privateWindow = false) {
       y: 0
     })
   })
-  view.webContents.on('context-menu', async () => {
-    await createContextMenu(view, 'tab')
+  win.on('resized', async () => {
+    let header = await getHeader(win)
+    if (header == null) return
+    let tabs = getTabs(win.id)
+    header.webContents.send('tabs-updated', tabs)
   })
   // view.webContents.openDevTools({ mode: 'detach' })
 }
