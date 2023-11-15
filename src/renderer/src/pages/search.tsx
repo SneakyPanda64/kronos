@@ -28,7 +28,7 @@ export default function SearchPage() {
           <div className="my-auto pr-4">
             <ReactSVG src={googleSvg} />
           </div>
-          <p className="my-auto">Search with DuckDuckGo or enter address</p>
+          <p className="my-auto">Search with Google or enter address</p>
         </div>
       </div>
     </div>

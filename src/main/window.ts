@@ -1,11 +1,12 @@
-import { BrowserWindow, screen, ThumbarButton, nativeImage } from 'electron'
+import { BrowserWindow, screen, ThumbarButton, nativeImage, session } from 'electron'
 import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
 import { getOverlay } from './overlay'
 import { readFileSync, writeFileSync } from 'fs'
+import fetch from 'cross-fetch' // required 'fetch'
 
-import { ElectronBlocker, fullLists } from '@cliqz/adblocker-electron'
+import { ElectronBlocker } from '@cliqz/adblocker-electron'
 export async function createWindow(
   tabIds: number[],
   position: { x: number; y: number },
@@ -17,6 +18,7 @@ export async function createWindow(
     width: 600,
     height: 600
   }
+
   const mainWindow = new BrowserWindow({
     width: size.width,
     height: size.height,
@@ -30,9 +32,15 @@ export async function createWindow(
     frame: false,
     icon: icon,
     webPreferences: {
-      sandbox: true
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
+  // @ts-ignore
+  mainWindow.data = {
+    private: privateWindow
+  }
   const thumbarButtons: ThumbarButton[] = [
     {
       tooltip: 'Open',
@@ -51,7 +59,7 @@ export async function createWindow(
   mainWindow.setThumbarButtons(thumbarButtons)
   await loadBlocker(mainWindow)
   console.log('CREATING WINDOW WITH', privateWindow)
-  await createHeader(mainWindow, privateWindow)
+  await createHeader(mainWindow)
 
   if (tabIds.length == 0) {
     let tabId = await createTab(mainWindow.id)
@@ -135,18 +143,22 @@ export function moveWindow(windowId: number, position: { x: number; y: number })
 }
 
 export async function loadBlocker(win: BrowserWindow) {
-  const blocker = await ElectronBlocker.fromLists(
-    fetch,
-    fullLists,
-    {
-      enableCompression: true
-    },
-    {
-      path: 'engine.bin',
-      read: async (...args) => readFileSync(...args),
-      write: async (...args) => writeFileSync(...args)
-    }
+  const blocker = await ElectronBlocker.fromPrebuiltAdsOnly(
+    fetch
+    // fullLists,
+    // {
+    //   enableCompression: true
+    // },
+    // {
+    //   path: 'engine.bin',
+    //   read: async (...args) => readFileSync(...args),
+    //   write: async (...args) => writeFileSync(...args)
+    // }
   )
-
   blocker.enableBlockingInSession(win.webContents.session)
+}
+
+export function getWindowData(win: BrowserWindow) {
+  // @ts-ignore
+  return win.data
 }

@@ -66,7 +66,7 @@ export default function HistoryPage() {
             />
             <h1 className="truncate">{item.title}</h1>
           </div>
-          <div className="w-1/2 truncate">{item.url}</div>
+          <div className="w-4/5 truncate">{item.url}</div>
         </div>
       </div>
     )

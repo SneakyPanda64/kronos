@@ -25,7 +25,6 @@ export async function openOverlay(
   focus: boolean
 ) {
   if (LAST_OVERLAY === type && LAST_WINDOW === win.id) {
-    console.log('moving position')
     let overlay = await getOverlay(win)
     if (overlay == null) return
     overlay.setBounds({
@@ -58,7 +57,11 @@ export async function openOverlay(
   if ((pos.x -= size.width) < 0) {
     pos.x += size.width
   }
-  await router(view, `overlay?id=none&type=${type}`)
+  try {
+    await router(view, `overlay?id=none&type=${type}`)
+  } catch (e) {
+    return
+  }
   await view.webContents.executeJavaScript("window.tagId = 'overlay'")
 
   console.log('size:', size, 'Pos', pos)

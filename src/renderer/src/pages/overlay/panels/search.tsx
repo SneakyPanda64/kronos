@@ -15,7 +15,7 @@ export default function SearchPanel() {
   const searchWithComponent = (query: string, url: any) => {
     const searchResult = (url) => {
       let item
-      let searchString = <h1>{query} - Search with DuckDuckGo</h1>
+      let searchString = <h1>{query} - Search with Google</h1>
       let favicon = ''
       if (url !== undefined && url.length !== 0) {
         item = url[0].item

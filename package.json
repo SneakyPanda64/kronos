@@ -26,6 +26,7 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
     "axios": "^1.6.1",
+    "cross-fetch": "^4.0.0",
     "electron-json-storage": "^4.6.0",
     "electron-updater": "^6.1.1",
     "fuse.js": "^7.0.0",

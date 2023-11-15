@@ -28,7 +28,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
             }
       )
       .filter((item) =>
-        item.url !== undefined ? !item.url.includes('duckduckgo.com') : item.query
+        item.url !== undefined ? !item.url.includes('google.com/search') : item.query
       )
   }
   const fuse = new Fuse(history, options)

@@ -1,8 +1,8 @@
-import { BrowserView, BrowserWindow, screen } from 'electron'
+import { BrowserView, BrowserWindow, screen, session } from 'electron'
 import path from 'path'
 import { getFavicon, getViewById } from './util'
 import { encode } from 'js-base64'
-import { deleteWindow } from './window'
+import { deleteWindow, getWindowData } from './window'
 import { getHeader } from './header'
 import { getOverlay, isOverlay } from './overlay'
 import { addHistory } from './db'
@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { getFaviconData } from './favicon'
 import { router } from './url'
 import { createContextMenu } from './contexts'
-import { JSDOM } from 'jsdom'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
@@ -39,7 +38,7 @@ export async function deleteTab(tabId: number) {
   if (win == null) return
   await removeTabListeners(view)
   win.removeBrowserView(view)
-  ;(view.webContents as any).destroy()
+    ; (view.webContents as any).destroy()
 
   const header = await getHeader(win)
   if (header != null) {
@@ -66,41 +65,38 @@ export async function applyTabListeners(view: BrowserView) {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
+    view.webContents.once('did-finish-load', async () => {
+      const tabs = await getTabs(win!.id)
+      header.webContents.send('tabs-updated', tabs)
+    })
     view.webContents.once('did-stop-loading', async () => {
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
 
-    view.webContents.on('context-menu', async (_, params) => {
-      const { x, y } = params
-      const html = await view.webContents.executeJavaScript(
-        `document.elementFromPoint(${x}, ${y}).outerHTML`
-      )
-      const { document } = new JSDOM(html).window
-      const element = document.body.firstChild
-      console.log('ELEM', element.nodeName, x, y)
-      if (`${element.nodeName}` == 'IMG') {
-        createContextMenu(view, 'img')
-      } else {
-        createContextMenu(view, 'body')
-      }
+    view.webContents.on('context-menu', async (_) => {
+      createContextMenu(view, 'body')
     })
     let prevUrls: string[] = []
-    view.webContents.on('did-fail-load', (_, errorCode) => {
+    view.webContents.on('did-fail-load', async (_, errorCode) => {
       console.log('FAILED', errorCode)
+      const tabs = await getTabs(win!.id)
+      header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.on('did-navigate', async (_, url) => {
       if (!prevUrls.includes(url)) {
         console.log('new NAVIGATED!')
-        let favicon_url = await getFavicon(view)
-        addHistory({
-          id: `${uuidv4()}`,
-          favicon: favicon_url ?? 'navigated',
-          title: view.webContents.getTitle(),
-          url: url,
-          timestamp: Date.now()
-        })
-        prevUrls.push(url)
+        if (!getWindowData(win!).private) {
+          let favicon_url = await getFavicon(view)
+          addHistory({
+            id: `${uuidv4()}`,
+            favicon: favicon_url ?? 'navigated',
+            title: view.webContents.getTitle(),
+            url: url,
+            timestamp: Date.now()
+          })
+          prevUrls.push(url)
+        }
       }
     })
     view.webContents.on('page-favicon-updated', async (_, favicons) => {
@@ -114,11 +110,16 @@ export async function applyTabListeners(view: BrowserView) {
 export async function createTab(windowId: number, url = '') {
   let win = BrowserWindow.fromId(windowId)
   if (win === null) return
+  const isPrivate = getWindowData(win).private
+  const privateSession = session.fromPartition('empty-session')
+  privateSession.clearStorageData()
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
       preload: path.join(__dirname, '../preload/index.js'),
-      sandbox: true
+      nodeIntegration: false,
+      contextIsolation: true,
+      session: isPrivate ? privateSession : session.defaultSession
     }
   })
 
@@ -165,10 +166,14 @@ export async function getTabs(windowId: number, favicon = '') {
     ) {
       try {
         let favicon_url = await getFavicon(elem)
-        let fav = await getFaviconData(
-          elem.webContents.getURL() === null ? '' : elem.webContents.getURL(),
-          favicon !== '' ? favicon : favicon_url
-        )
+        let fav: any
+        if (elem.webContents !== null) {
+          fav = await getFaviconData(
+            elem.webContents.getURL() === null ? '' : elem.webContents.getURL(),
+            favicon !== '' ? favicon : favicon_url
+          )
+        }
+
         // console.log('FAVICON LENGTH', fav.length)
         let tab = {
           id: elem.webContents.id,
@@ -335,7 +340,7 @@ export async function getSelectedTab(win: BrowserWindow) {
           return tab
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
   return null
 }
