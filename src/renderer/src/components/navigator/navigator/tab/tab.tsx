@@ -90,7 +90,6 @@ export default function TabBar(props: {
   }
 
   const handleUpdateTabs = (tabs: Tab[]) => {
-    // let newCurrentTabs = currentTabs
     let newPosMap: number[] = posMap
     let newTabList = {}
     tabs.forEach((tab) => {
@@ -108,20 +107,16 @@ export default function TabBar(props: {
       if (!posMap.includes(tab.id)) {
         newPosMap.push(tab.id)
       }
-
-      // if (newCurrentTabs.includes(tab))
     })
     setPosMap(newPosMap)
     props.setTabs(newTabList)
   }
 
   const containerRef = useRef(null)
-  // const [isOverflow, setIsOverflow] = useState(false)
   const scrollOffset = (offset: number) => {
     ;(containerRef.current as any).scrollLeft += offset
   }
   useEffect(() => {
-    // try {
     if (containerRef.current == null) return
     const handleMouseWheel = (event) => {
       scrollOffset((event.deltaY + 1) * 0.5)
@@ -129,14 +124,6 @@ export default function TabBar(props: {
     }
     ;(containerRef.current as any).addEventListener('wheel', handleMouseWheel)
   }, [])
-
-  // useEffect(() => {
-  //   try {
-  //     setIsOverflow(
-  //       ((containerRef.current as any).scrollWidth ?? 0) > (containerRef.current as any).clientWidth
-  //     )
-  //   } catch (e) {}
-  // }, [props.tabs])
   async function handleOnDragEnd(result) {
     if (!result.destination) {
       console.log('attemp create window', result.draggableId)
@@ -193,19 +180,6 @@ export default function TabBar(props: {
   }
   return (
     <div className="flex h-[50vh]">
-      {/* {isOverflow ? (
-        <div
-          className="my-auto mr-2 hidden md:block"
-          onClick={() => {
-            ;(containerRef.current! as any).scrollLeft -= 100
-          }}
-        >
-          <BiSolidLeftArrow size={20} />
-        </div>
-      ) : (
-        <></>
-      )} */}
-
       <div ref={containerRef} className=" overflow-x-hidden  w-[70vw] overflow-y-hidden flex">
         <div className="flex">
           <DragDropContext direction="horizontal" onDragEnd={handleOnDragEnd}>
@@ -243,27 +217,10 @@ export default function TabBar(props: {
               )}
             </Droppable>
           </DragDropContext>
-          {/* {!isOverflow ? ( */}
           <div className="">{newTabButton()}</div>
-          {/* ) : ( */}
-          {/* <div className="block mr-5 md:hidden md:mr-0">{newTabButton()}</div> */}
-          {/* )} */}
         </div>
         <div className="w-full draggable"></div>
       </div>
-      {/* {isOverflow ? (
-        <div className="my-auto ml-2 hidden md:block">
-          <BiSolidRightArrow
-            onClick={() => {
-              ;(containerRef.current! as any).scrollLeft += 100
-            }}
-            size={20}
-          />
-        </div>
-      ) : (
-        <></>
-      )}
-      {isOverflow ? <div className="hidden md:block">{newTabButton()}</div> : <></>} */}
     </div>
   )
 }

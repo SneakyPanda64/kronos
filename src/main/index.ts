@@ -28,13 +28,10 @@ import { encode } from 'js-base64'
 import { getHistory } from './db'
 import { registerShortcuts } from './shortcuts'
 import { registerUser } from './auth'
-// import { addHistory, getHistory } from './db'
-// import { createCollection, createDatabase, insertHistory } from './db'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 app.setName('Kronos')
 app.whenReady().then(() => {
-  // const db = new sqlite3.Database('./databases/history.db')
   electronApp.setAppUserModelId('com.electron')
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -221,7 +218,6 @@ app.whenReady().then(() => {
     console.log(email, password)
     let error = registerUser(email, password)
     return error
-    // http://localhost:3000/api
   })
   createWindow([], { x: 100, y: 100 })
   registerShortcuts()

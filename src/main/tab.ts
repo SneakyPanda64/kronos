@@ -53,29 +53,20 @@ export async function removeTabListeners(view: BrowserView) {
 }
 
 export async function applyTabListeners(view: BrowserView) {
-  // function getWindow() {
-  //   let win = BrowserWindow.fromBrowserView(view)
-  //   if (win === null) return
-  //   return win
-  // }
-  // let header = await getHeader(getWindow()!)
   let win = BrowserWindow.fromBrowserView(view)
   if (win === null) return
   let header = await getHeader(win)
   if (header != null) {
     view.webContents.setMaxListeners(0)
     view.webContents.on('page-title-updated', async () => {
-      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.on('did-start-loading', async () => {
-      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.once('did-stop-loading', async () => {
-      // let win = getWindow()
       const tabs = await getTabs(win!.id)
       header.webContents.send('tabs-updated', tabs)
     })

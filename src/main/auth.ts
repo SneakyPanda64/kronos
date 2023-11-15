@@ -8,12 +8,10 @@ export async function registerUser(email: string, password: string) {
       password: password
     })
     .then((response) => {
-      // Handle the successful response
       console.log('Response:', response.data)
       return ''
     })
     .catch((error) => {
-      // Handle errors
       console.error('Error:', error)
       return `${error}`
     })

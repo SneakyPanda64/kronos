@@ -56,17 +56,6 @@ export default function MenuPanel() {
         }, 'history')
       }
     },
-    // {
-    //   type: 'link',
-    //   title: 'Downloads',
-    //   link: 'downloads',
-    //   keybind: 'Ctrl+J',
-    //   action: () => {
-    //     window.indexBridge?.settings.openSettings(() => {
-    //       closeOverlay()
-    //     }, 'downloads')
-    //   }
-    // },
     {
       type: 'link',
       title: 'Settings',

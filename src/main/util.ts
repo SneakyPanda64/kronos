@@ -34,7 +34,6 @@ export async function getFavicon(browserView: BrowserView) {
 
     return favicon
   } catch (error) {
-    // console.error('Error getting favicon:', error)
     return null
   }
 }

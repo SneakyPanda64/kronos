@@ -10,14 +10,6 @@ export default function Utils() {
         height: 300
       }
     }
-    // {
-    //   icon: BiDownload,
-    //   type: 'downloads',
-    //   size: {
-    //     width: 100,
-    //     height: 200
-    //   }
-    // }
   ]
   const handleOpenOverlay = (
     type: string,

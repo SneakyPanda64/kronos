@@ -19,7 +19,6 @@ const buttons: ContextButton[] = [
       })
     },
     icon: <FaBarsStaggered />
-    // icon: <LuInspect />
   },
   {
     id: 'close-window',
@@ -63,12 +62,6 @@ const buttons: ContextButton[] = [
 
 export default function ContextPanel() {
   const [data, setData] = useState<any>({})
-  //   const closeOverlay = () => {
-  //     window.indexBridge?.overlay.closeOverlay(() => {
-  //       console.log('closed overlay')
-  //     })
-  //   }
-
   useEffect(() => {
     window.indexBridge?.overlay.onData((_: any, data: any) => {
       let d = JSON.parse(data)

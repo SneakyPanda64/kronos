@@ -26,6 +26,5 @@ export async function createContextMenu(view: BrowserView, type: string) {
   let data = JSON.stringify({
     data: { buttons: menus[type]['buttons'] }
   })
-  console.log('DATA', data)
   overlay.webContents.send('sending-overlay-data', data)
 }

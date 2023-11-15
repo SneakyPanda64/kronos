@@ -48,7 +48,6 @@ export async function createWindow(
     }
   ]
 
-  // Set the taskbar context menu
   mainWindow.setThumbarButtons(thumbarButtons)
   await loadBlocker(mainWindow)
   console.log('CREATING WINDOW WITH', privateWindow)
@@ -150,28 +149,4 @@ export async function loadBlocker(win: BrowserWindow) {
   )
 
   blocker.enableBlockingInSession(win.webContents.session)
-
-  // blocker.on('request-blocked', (request: Request) => {
-  //   console.log('blocked', request.tabId, request.url)
-  // })
-
-  // blocker.on('request-redirected', (request: Request) => {
-  //   console.log('redirected', request.tabId, request.url)
-  // })
-
-  // blocker.on('request-whitelisted', (request: Request) => {
-  //   console.log('whitelisted', request.tabId, request.url)
-  // })
-
-  // blocker.on('csp-injected', (request: Request) => {
-  //   console.log('csp', request.url)
-  // })
-
-  // blocker.on('script-injected', (script: string, url: string) => {
-  //   console.log('script', script.length, url)
-  // })
-
-  // blocker.on('style-injected', (style: string, url: string) => {
-  //   console.log('style', style.length, url)
-  // })
 }

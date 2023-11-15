@@ -5,7 +5,6 @@ import ErrorPage from './pages/error.tsx'
 import SearchPage from './pages/search.tsx'
 import Overlay from './pages/overlay/index.tsx'
 import Settings from './pages/settings/index.tsx'
-// import { ipcRenderer, ipcMain } from 'electron'; // Use `require` here
 function Main() {
   return (
     <>

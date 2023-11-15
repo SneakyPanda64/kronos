@@ -35,13 +35,10 @@ export default function Navigator() {
               <Actions />
             </div>
           </div>
-
-          {/* </div> */}
           <div>
             <Bar selectedTab={selectedTab} tabs={tabs} />
           </div>
         </div>
-        <div>{/* <h1>{getURL()}</h1> */}</div>
       </div>
     </div>
   )
