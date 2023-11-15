@@ -8,7 +8,7 @@ export default function Utils() {
       type: 'menu',
       size: {
         width: 250,
-        height: 500
+        height: 300
       }
     }
     // {

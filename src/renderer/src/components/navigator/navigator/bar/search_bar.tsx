@@ -69,7 +69,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   useEffect(() => {
     let newUrl = getURL()
     if (newUrl !== url && newUrl != '') {
-      setUrl(newUrl)
+      setUrl(newUrl.replaceAll('‎', ''))
     }
   }, [props.tabs, props.selectedTab])
   const goToUrl = () => {
@@ -78,7 +78,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
       if (urlSearchResults.length != 0) {
         newUrl = urlSearchResults[0].item.url
       }
-      setUrl(newUrl)
+      setUrl(newUrl.replaceAll('‎', ''))
       window.indexBridge?.navigation.goToUrl(() => {}, props.selectedTab, newUrl)
     })
   }
@@ -124,7 +124,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
     }
   }, [isFocused])
   const handleValueChange = (e: any) => {
-    setUrl(e.target.value)
+    setUrl(e.target.value.replaceAll('‎', ''))
     const { value } = e.target
     let results = fuse.search(value).filter((item) => item.item.query !== undefined)
     setSearchResults(results)

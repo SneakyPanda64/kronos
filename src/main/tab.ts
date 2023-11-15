@@ -106,7 +106,6 @@ export async function applyTabListeners(view: BrowserView) {
           url: url,
           timestamp: Date.now()
         })
-
         prevUrls.push(url)
       }
     })
@@ -141,7 +140,7 @@ export async function createTab(windowId: number, url = '') {
   if (url === '') {
     let urlHash = encode('‎', true)
     router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
-    focusSearch(windowId)
+    // focusSearch(windowId)
   } else {
     await view.webContents.loadURL(url)
   }

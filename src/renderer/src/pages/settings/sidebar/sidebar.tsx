@@ -16,10 +16,6 @@ export default function Sidebar() {
     {
       title: 'History',
       type: 'history'
-    },
-    {
-      title: 'Downloads',
-      type: 'downloads'
     }
   ]
   const handleTypeChange = (newType: string) => {

@@ -113,11 +113,6 @@ export default function MenuPanel() {
       {primaryItems.map((item) => itemComponent(item))}
       {separator()}
       {secondaryItems.map((item: any) => itemComponent(item))}
-      {separator()}
-      {itemComponent({
-        type: 'link',
-        title: 'Exit'
-      })}
     </div>
   )
 }
