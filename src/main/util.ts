@@ -1,7 +1,5 @@
 /* eslint import/prefer-default-export: off */
-import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
-import { is } from '@electron-toolkit/utils'
 
 export function windowFromViewId(viewId: number) {
   let view = getViewById(viewId)

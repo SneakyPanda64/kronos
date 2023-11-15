@@ -1,5 +1,4 @@
-import { useLocation, useSearchParams, useNavigate } from 'react-router-dom'
-import HistoryPage from '../pages/history'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 export default function Sidebar() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

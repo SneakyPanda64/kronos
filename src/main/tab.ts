@@ -1,10 +1,10 @@
-import { BrowserView, BrowserWindow, Menu, screen } from 'electron'
+import { BrowserView, BrowserWindow, screen } from 'electron'
 import path from 'path'
 import { getFavicon, getViewById } from './util'
 import { encode } from 'js-base64'
 import { deleteWindow } from './window'
 import { getHeader } from './header'
-import { closeOverlay, getOverlay, isOverlay, openOverlay } from './overlay'
+import { getOverlay, isOverlay } from './overlay'
 import { addHistory } from './db'
 import { v4 as uuidv4 } from 'uuid'
 import { getFaviconData } from './favicon'
@@ -95,10 +95,10 @@ export async function applyTabListeners(view: BrowserView) {
       }
     })
     let prevUrls: string[] = []
-    view.webContents.on('did-fail-load', (e, errorCode) => {
+    view.webContents.on('did-fail-load', (_, errorCode) => {
       console.log('FAILED', errorCode)
     })
-    view.webContents.on('did-navigate', async (event, url) => {
+    view.webContents.on('did-navigate', async (_, url) => {
       if (!prevUrls.includes(url)) {
         console.log('new NAVIGATED!')
         let favicon_url = await getFavicon(view)

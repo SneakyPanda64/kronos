@@ -10,9 +10,8 @@ import path from 'path'
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
 export async function resolveUrl(url: string) {
-  let res
   try {
-    res = await axios.get(url)
+    await axios.get(url)
     return ''
   } catch (e: any) {
     if (e.response != undefined) {

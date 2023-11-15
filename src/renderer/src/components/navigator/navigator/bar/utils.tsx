@@ -1,4 +1,3 @@
-import { BiDownload } from 'react-icons/bi'
 import { GiHamburgerMenu } from 'react-icons/gi'
 
 export default function Utils() {

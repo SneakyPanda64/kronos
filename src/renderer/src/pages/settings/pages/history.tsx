@@ -38,7 +38,7 @@ export default function HistoryPage() {
   }
   const handleHistoryClick = (url: string) => {
     console.log('creating new tab2')
-    window.indexBridge?.tabs.newTab((tabId: number) => {
+    window.indexBridge?.tabs.newTab(() => {
       console.log('new tab created!')
     }, url)
   }
@@ -75,7 +75,7 @@ export default function HistoryPage() {
     <div className="w-full mx-4 ">
       {searchComponent()}
       {searchTerm == '' ? (
-        history.map((result, index) => {
+        history.map((result) => {
           return (result.url ?? '').length > 1 && result.query == null ? (
             historyComponent({
               id: result.id,

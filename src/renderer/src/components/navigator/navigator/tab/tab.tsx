@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Tab } from '../../../../interfaces.ts'
 import TabButton from './tab_button.tsx'
 import { IoMdAdd } from 'react-icons/io'
-import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
 import { decode } from 'js-base64'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 

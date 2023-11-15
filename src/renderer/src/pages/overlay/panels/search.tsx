@@ -51,7 +51,7 @@ export default function SearchPanel() {
   }
   const queryComponent = (query: string) => {
     return (
-      <div className="flex py-2 hover:bg-s-dark-gray hover:cursor-pointer" onClick={(e) => {}}>
+      <div className="flex py-2 hover:bg-s-dark-gray hover:cursor-pointer">
         <div className="my-auto px-2">
           <FaHistory />
         </div>
@@ -63,7 +63,7 @@ export default function SearchPanel() {
     <div className="ring-s-blue ring-2">
       {searchWithComponent(data.query, data.url)}
       {data.similar !== undefined ? (
-        data.similar.map((item) => {
+        data.similar.map((item: any) => {
           return item.item.query !== undefined ? (
             <div>{queryComponent(item.item.query)}</div>
           ) : (

@@ -3,7 +3,7 @@ import TabBar from './navigator/tab/tab'
 import Actions from './actions'
 import Bar from './navigator/bar/bar'
 import { useSearchParams } from 'react-router-dom'
-import { AiFillEye, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'
+import { AiOutlineEyeInvisible } from 'react-icons/ai'
 export default function Navigator() {
   const [selectedTab, setSelectedTab] = useState(4)
   const [tabs, setTabs] = useState<any>({})

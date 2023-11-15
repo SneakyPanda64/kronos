@@ -1,5 +1,3 @@
-import React, { useEffect } from 'react'
-import ReactDOM from 'react-dom/client'
 import { useSearchParams } from 'react-router-dom'
 import '../assets/index.css'
 import { errors } from './errors.json'

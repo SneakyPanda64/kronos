@@ -1,15 +1,15 @@
-import { BrowserWindow, shell, screen } from 'electron'
-import { createTab, moveTabs, selectTab, updateAllWindows } from './tab'
+import { BrowserWindow, screen, ThumbarButton, nativeImage } from 'electron'
+import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
 import { getOverlay } from './overlay'
 import { readFileSync, writeFileSync } from 'fs'
 
-import { ElectronBlocker, fullLists, Request } from '@cliqz/adblocker-electron'
+import { ElectronBlocker, fullLists } from '@cliqz/adblocker-electron'
 export async function createWindow(
   tabIds: number[],
   position: { x: number; y: number },
-  maximised = false,
+  _ = false,
   privateWindow = false
 ): Promise<void> {
   console.log(position)
@@ -28,12 +28,28 @@ export async function createWindow(
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     frame: false,
-
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: icon,
     webPreferences: {
       sandbox: true
     }
   })
+  const thumbarButtons: ThumbarButton[] = [
+    {
+      tooltip: 'Open',
+      icon: nativeImage.createFromPath('../../resources/icon.png'),
+      click: () => {
+        mainWindow.show()
+      }
+    },
+    {
+      tooltip: 'Exit',
+      icon: nativeImage.createFromPath('../../resources/icon.png'),
+      click: () => {}
+    }
+  ]
+
+  // Set the taskbar context menu
+  mainWindow.setThumbarButtons(thumbarButtons)
   await loadBlocker(mainWindow)
   console.log('CREATING WINDOW WITH', privateWindow)
   await createHeader(mainWindow, privateWindow)

@@ -26,7 +26,7 @@ let overlay = {
     ipcRenderer.send('send-overlay-data', data)
   },
   onData: (callback: any) => ipcRenderer.on('sending-overlay-data', callback),
-  openContext: (callback: any, type: string) => {
+  openContext: (callback: any, _: string) => {
     ipcRenderer.once('send-open-context-reply', () => {
       callback()
     })

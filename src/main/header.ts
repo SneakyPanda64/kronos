@@ -1,8 +1,6 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './url'
-import { createContextMenu } from './contexts'
-import { getTabs } from './tab'
 
 const NAVIGATOR_HEIGHT = 80
 
