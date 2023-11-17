@@ -22,7 +22,7 @@ const window = {
   toggleMaxWindow: () => {
     ipcRenderer.send('toggle-max-window')
   },
-  moveWindow: (callback: any, position: { x: number; y: number }) => {
+  moveWindow: (callback: any, position?: { x: number; y: number }) => {
     ipcRenderer.once('move-window-reply', (_) => {
       callback()
     })

@@ -1,4 +1,4 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+import { indexBridge } from '.'
 
 declare global {
   interface Window {

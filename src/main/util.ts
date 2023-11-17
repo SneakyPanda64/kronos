@@ -52,3 +52,23 @@ export function getViewById(id: number): BrowserView | null {
   }
   return found
 }
+
+export function setViewData(view: BrowserView, key: string, value: any) {
+  // @ts-ignore
+  if (view.data === undefined) {
+    // @ts-ignore
+    view.data = {}
+  }
+  // @ts-ignore
+  view.data[key] = value
+}
+
+export function getViewData(view: BrowserView, key: string) {
+  // @ts-ignore
+  if (view.data === undefined) return null
+  // @ts-ignore
+
+  console.log('getViewData', key, view.data)
+  // @ts-ignore
+  return view.data[key]
+}

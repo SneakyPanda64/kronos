@@ -26,7 +26,7 @@ export default function ErrorPage() {
     return (
       <div className="flex h-screen w-screen text-xl text-white font-normal relative p-8">
         <Helmet>
-          <link rel="icon" href="./src/assets/error.png" />
+          <link rel="icon" href="./src/assets/pages/error.png" />
           <title>Error</title>
         </Helmet>
         <div className="m-auto justify-center items-center ">

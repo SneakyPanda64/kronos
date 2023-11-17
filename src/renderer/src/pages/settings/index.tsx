@@ -19,7 +19,7 @@ export default function Settings() {
     <div className="grid grid-cols-5 lg:grid-cols-5 overflow-hidden">
       <Helmet>
         <title>Settings</title>
-        <link rel="icon" href="./src/assets/settings.png" />
+        <link rel="icon" href="./src/assets/pages/settings.png" />
       </Helmet>
       <div className="h-screen hidden sm:block">
         <Sidebar />

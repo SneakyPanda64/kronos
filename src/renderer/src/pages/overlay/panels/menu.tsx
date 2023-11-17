@@ -1,8 +1,8 @@
 export default function MenuPanel() {
   const closeOverlay = () => {
-    window.indexBridge?.overlay.closeOverlay(() => {
-      console.log('closed overlay')
-    })
+    // window.indexBridge?.overlay.closeOverlay(() => {
+    //   console.log('closed overlay')
+    // })
   }
   const primaryItems = [
     {

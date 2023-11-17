@@ -1,20 +1,26 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './url'
+import { getViewData, setViewData } from './util'
 
 let LAST_OVERLAY = ''
 let LAST_WINDOW = -1
 
-export async function closeOverlay(win: BrowserWindow) {
+export function closeOverlay(win: BrowserWindow) {
   LAST_OVERLAY = ''
   LAST_WINDOW = -1
-  const view: BrowserView | null = await getOverlay(win)
-  if (view == null) {
-    return
+  const view = getOverlay(win)
+  if (view !== null) {
+    console.log('closeOverlay', 'removing webview', view.webContents.id)
+    setViewData(view, 'type', '')
+    try {
+      if (BrowserWindow.fromBrowserView(view) === win) {
+        win.removeBrowserView(view)
+      }
+    } catch (e) {}
+    ;((view as any).webContents as any).destroy()
+    console.log('CLOSED OVERLAY')
   }
-  win.removeBrowserView(view)
-  ;((view as any).webContents as any).destroy()
-  console.log('CLOSED OVERLAY')
 }
 
 export async function openOverlay(
@@ -25,7 +31,7 @@ export async function openOverlay(
   focus: boolean
 ) {
   if (LAST_OVERLAY === type && LAST_WINDOW === win.id) {
-    const overlay = await getOverlay(win)
+    const overlay = getOverlay(win)
     if (overlay == null) return
     overlay.setBounds({
       width: size.width,
@@ -45,9 +51,9 @@ export async function openOverlay(
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
-
+  setViewData(view, 'type', 'overlay')
   view.webContents.on('blur', async () => {
-    await closeOverlay(win)
+    closeOverlay(win)
   })
   win.addBrowserView(view)
   const pos = {
@@ -62,8 +68,6 @@ export async function openOverlay(
   } catch (e) {
     return
   }
-  await view.webContents.executeJavaScript("window.tagId = 'overlay'")
-
   console.log('size:', size, 'Pos', pos)
   view.setBounds({ width: size.width, height: size.height, x: pos.x, y: pos.y })
   if (focus) {
@@ -72,26 +76,32 @@ export async function openOverlay(
   // view.webContents.openDevTools({ mode: 'detach' })
 }
 
-export async function isOverlay(view: BrowserView) {
+export function isOverlay(view: BrowserView) {
+  console.log('!! isOverlay')
   try {
-    if (view == null || view.webContents == null || view.webContents.isDestroyed()) return
-    return (await view.webContents.executeJavaScript('window.tagId')) == 'overlay'
+    if (view === null || view.webContents === null || view.webContents.isDestroyed()) return
+    return getViewData(view, 'type') == 'overlay'
   } catch (e) {
+    console.log('isOverlay error', e)
     return null
   }
 }
 
-export async function getOverlay(win: BrowserWindow) {
+export function getOverlay(win: BrowserWindow) {
+  console.log('!! getOverlay')
+  const webContents = win.webContents
+  if (!webContents) {
+    return null
+  }
   const browserViews = win.getBrowserViews()
-  for (const v of browserViews) {
+  for (const view of browserViews) {
     try {
-      if (
-        !v.webContents.isDestroyed() &&
-        (await v.webContents.executeJavaScript('window.tagId')) == 'overlay'
-      ) {
-        return v
+      if (isOverlay(view)) {
+        return view
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('getOverlay', e)
+    }
   }
   return null
 }

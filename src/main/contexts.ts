@@ -21,7 +21,7 @@ export async function createContextMenu(view: BrowserView, type: string) {
     y: y - win!.getPosition()[1]
   }
   await openOverlay(win!, 'context', { x: pos.x, y: pos.y }, { width: 175, height: 100 }, true)
-  const overlay = await getOverlay(win)
+  const overlay = getOverlay(win)
   if (overlay == null) return
   const data = JSON.stringify({
     data: { buttons: menus[type]['buttons'] }

@@ -200,13 +200,13 @@ app.whenReady().then(() => {
   ipcMain.on('close-overlay', async (event) => {
     const win = windowFromViewId(event.sender.id)
     if (win === null) return
-    await closeOverlay(win)
+    closeOverlay(win)
     event.reply('close-overlay-reply')
   })
   ipcMain.on('send-overlay-data', async (event, data: any) => {
     const win = windowFromViewId(event.sender.id)
     if (win === null) return
-    const overlay = await getOverlay(win)
+    const overlay = getOverlay(win)
     if (overlay == null) return
     overlay.webContents.send('sending-overlay-data', data)
     event.reply('send-overlay-data-reply')

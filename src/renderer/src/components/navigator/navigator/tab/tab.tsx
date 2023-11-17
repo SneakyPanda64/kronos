@@ -24,7 +24,7 @@ export default function TabBar(props: {
   }
 
   const handleTab = async (id: number) => {
-    await window.indexBridge?.tabs.selectTab(id)
+    window.indexBridge?.tabs.selectTab(id)
     props.setSelectedTab(id)
   }
   const handleDeleteTab = async (tabId: number) => {
@@ -126,7 +126,7 @@ export default function TabBar(props: {
   async function handleOnDragEnd(result) {
     if (!result.destination) {
       console.log('attemp create window', result.draggableId)
-      await window.indexBridge?.tabs.moveTabs(
+      window.indexBridge?.tabs.moveTabs(
         (moved: boolean) => {
           console.log('moving tabs')
           if (moved) {

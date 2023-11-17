@@ -1,17 +1,18 @@
 import { BrowserView, BrowserWindow } from 'electron'
 import path from 'path'
 import { router } from './url'
+import { getViewData, setViewData } from './util'
 
 const NAVIGATOR_HEIGHT = 80
 
-export async function getHeader(win: BrowserWindow) {
+export function getHeader(win: BrowserWindow) {
   let header = win.getBrowserViews()[0]
 
   const browserViews = win.getBrowserViews()
-  for (const v of browserViews) {
-    if (v !== null && v.webContents !== null && !v.webContents.isDestroyed()) {
-      if ((await v.webContents.executeJavaScript('window.tagId')) == 'header') {
-        header = v
+  for (const view of browserViews) {
+    if (view !== null && view.webContents !== null && !view.webContents.isDestroyed()) {
+      if (getViewData(view, 'type') == 'header') {
+        header = view
         break
       }
     }
@@ -23,13 +24,13 @@ export async function createHeader(win: BrowserWindow) {
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
-      nodeIntegration: true,
-      webSecurity: false,
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
+  // @ts-ignore
+  setViewData(view, 'type', 'header')
 
-  view.webContents.executeJavaScript("window.tagId = 'header'")
+  // view.webContents.executeJavaScript("window.tagId = 'header'")
   win.addBrowserView(view)
 
   view.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: NAVIGATOR_HEIGHT })

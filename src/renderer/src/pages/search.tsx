@@ -16,7 +16,7 @@ export default function SearchPage() {
   return (
     <div className="flex w-screen h-screen select-none cursor-text overflow-clip">
       <Helmet>
-        <link rel="icon" href="./src/assets/google.png" />
+        <link rel="icon" href="./src/assets/pages/search.png" />
       </Helmet>
       <div className="mx-auto pt-40 text-center justify-center w-3/4 md:w-1/2 lg:w-1/3">
         <h1 className="text-6xl pb-12">Kronos</h1>

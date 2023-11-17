@@ -26,7 +26,7 @@ export async function selectTab(tabId: number) {
       showTab(tabId)
     }
   }
-  const header = await getHeader(win)
+  const header = getHeader(win)
   if (header == null) return
   header.webContents.send('selected-tab-updated', tabId)
 }
@@ -40,7 +40,7 @@ export async function deleteTab(tabId: number) {
   win.removeBrowserView(view)
   ;(view.webContents as any).destroy()
 
-  const header = await getHeader(win)
+  const header = getHeader(win)
   if (header != null) {
     const tabs = await getTabs(win.id)
     header.webContents.send('tabs-updated', tabs)
@@ -54,7 +54,7 @@ export async function removeTabListeners(view: BrowserView) {
 export async function applyTabListeners(view: BrowserView) {
   const win = BrowserWindow.fromBrowserView(view)
   if (win === null) return
-  const header = await getHeader(win)
+  const header = getHeader(win)
   if (header != null) {
     view.webContents.setMaxListeners(0)
     view.webContents.on('page-title-updated', async () => {
@@ -161,7 +161,7 @@ export async function getTabs(windowId: number, favicon = '') {
     if (
       elem != null &&
       elem.webContents != null &&
-      elem.webContents.id != (await getHeader(win!)).webContents.id &&
+      elem.webContents.id != getHeader(win!).webContents.id &&
       !(await isOverlay(elem)) &&
       !elem.webContents.getURL().includes('f1f0313f-8a5b-4ffd-b137-167fb439ddb0')
     ) {
@@ -189,6 +189,20 @@ export async function getTabs(windowId: number, favicon = '') {
           }
           if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
             tab.url = ''
+          }
+          if (elem.webContents.getURL().includes('6713de00-4386-4a9f-aeb9-0949b3e71eb7')) {
+            if (elem.webContents.getURL().includes('search')) {
+              tab.favicon =
+                'iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABd1BMVEUAAADxRznpQzXpRDXqQzXqQzXqQzXqRDbrQzTfQEDpRDbqQzXrQzX/VSvoRjbqQzXqQzXpQzfnQDjqQzTbSSTqQzXqQzXqQjTqQzTqQjTqQzXqQzXpRDT/MzPqQzTrQzb/xgD0khbrSTLqQzXrQzb8vAbqRDT7uwTwbiTtSTf6vAX7vARDhvX7vAX7vAZDhvX7vQZChPT7vARChPTzuwiCsDY3pFtEg/RChPVBhfP8uwY1p1RChfNChfRAivS5tR80qFMyqFRChfVChfRChfQzp1Q0qFM0qFMzmWYAgIA6nYFBh/BChPNAn2A0qFMzqFM0qFQ0p1MzqFMzqVM0qFNChfMA//84p1A0qFNChfRGhPY0qFM0plw9j8Iktkk0p1Q0qFM0qFM0qFIzqlUtpVozqVM0qFM0qFM0qFM0qFMzqFM0qFMzqVI1p0/qQzX7vAX5qgztVy36twdChfTfuRBXq0U0qFM/qU43oXVAieE1pV8+jsj///9xjqGrAAAAbnRSTlMAEmqx4vb022cIgPB9BiHQxhcgtAfP5JJrbOP6dQV6sAns/vtMW4Sx7w7ir2f4hn6Hh7Bw/uQORGhWWoOE/Rju+0wy9cl9+nUFAmXuVQjO5JJraYvbxgEg4eUdz+YyB4Dz+ZgPEWiv4Pb137ZzHX5o7HUAAAABYktHRHzRtiBfAAAAB3RJTUUH5wgWEx0Wl08GfAAAAQJJREFUKM9jYCAAGJmYWVjZ2Jk5GFGEObnY8qCAm4cXIc7Hn4cEBARh4kIsyOJ5wiIwc0TBfDFxCUlxKSRxBh6QsLSMLIjNKycPF1dQVMrLU1bBdKhqfkFhnhoWH6jn5xdpaGKR0MrPz9eGMIvhQAfI0wVK6KFL6EMlDNAlDKFGGaFLGAN5Rvn5JqZmYAlzELAASVgCeVb5JaVl1gjH2ADFbe1AHrQvLytzcISJOzkDJVzATNcyIHBz9wCxPb28QSb5gCV8/UAyZf4BgUHBIWUVlcXFoWEQ3eERZUigqjoyCmZueDSyTEwswiVx8Qkw4cSkZJQQS0lNS8/IzMrOySWUbAAwR2hJPoYcuAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMy0wOC0yMlQxOToyOToyMiswMDowMASADFIAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjMtMDgtMjJUMTk6Mjk6MjIrMDA6MDB13bTuAAAAAElFTkSuQmCC'
+            }
+            if (elem.webContents.getURL().includes('settings')) {
+              tab.favicon =
+                'iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC20lEQVR4nO2av2sUQRTHN+QwaLwTwWjhD4QENBExRtGIpdhor5YG/QMisYsKElA06F+glZ1BLGwVLDRiEW0tRDGHwsVKiyTeJfeRgRdYxs3u/MrtXswXrrq3b+azO2/m7XsbRRv6DwTcA5b5Vw1gLGoXAVVW14eoHQRUgGYKyCJQioouYJhsHcxzgvuAa0BPht2IAciFDB89wCiwNzTEfuCrTKIGnE+xnTQAuZ1y/Rngu9ipWOsLBdGXELwqBh4AXZrtduCNAcgroKxdu0lugh5fs0DvWkDE9REYkLh4DvzBXPPAE+AwcACYSbF1hwH2ZECsqI6f1BNYMLCbBXa7gJgEbat12QVkC/CJ4ugzsNUaRGCOBVg6IdQATjpBxGBu5U0B3PCCEJASMJ0jxFug0xsktg3nscTmvc8QDeQU+WgZOBQS5IXlBFQaMw4MAt3yO6rWuvxno0ehIHbKrmGqp3r6ofkrA1MW/n4Bm13fJ1TKcVXyqfeWEB0GY3RYwrwG7sshfSLtRinndyUNcFUtdYDkGzbnMd43Neckx0v4adwUIjbmTc8xl5Kcpr2emuiIA4jaAHzUXAsQ6zxIAr9wIGUHkEoRQQaLsrTqrU7sAiSk9SSn11XxTOpOrdh+twE/HcdalLmOZWW76j38InDHsJiwoimLA/GZhd+XwIQqIwH9TgU+hxRFwVQynoQNxG+nFCVQ0jgnh92Q2pblNyQxYbucHgeByDmNb4ZO4wcsl1coLaiaVyiILinE5aUZVYUMAfKQ/DXpC3E2wIkfQk3gnCvEDuAHxVEN2OUConohRdOoa2PHpIhtU4H3KWJX1ZysQQzbCu/EZlhOa9e2Qm9GEbDq3fBZBaYhp3QpodEzbVhM0Bs9nVIu0rPwoF2reOvtC3Dac7ueSLn+eKwLEA5Ca/yockx3ht0VA5BLBi2NEafGTovzsv6o6GK9fDCwbj7hiFUt2/+jmg1F7voLIPGx/CY2I0YAAAAASUVORK5CYII='
+            }
+            if (elem.webContents.getURL().includes('error')) {
+              tab.favicon =
+                'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAABqElEQVR4nO3YP2oCQRiH4amSPiwIFjYWYjBgY2FjIRELMVjYCNpY2FgIxsJG8BTmBB4ihcewCGyOEDxAhDfsIhNi3Ow/Xb8l88DCwFY/0JdhlTIMwzCMCwAawPvheVRpAtwBH3zbAZZKC+CF31YqDYB74PPEgD3woKQDXvG2UZIBT/hrK4mAG+AtwAAbuFXSAM8EN1XCs+lHVlY5nU0/MrLqlc1sNovz2nlyuRxis4pHNvP5vB5QKBRkZpU/slkqlfSAcrksL6v4ZLNSqegB1WpVXlbxyWatVtMD6vU6orJKgGw2m009oNVqycoqAbLZ6XT0gG63i5is4n3b/KHX6+kBg8EgyIB9Iln1uW1qw+FQDxiNRgS0kXDbdI3HYz1gMpkQQvvat03XbDbTA+bzeZgB9kWyGvK2yWKx0AOWyyUhTa9924xrd9asRrxtxrVKNJvHttst/X7fTahzjmB/lqwGzeaxYrGo/wPOOaJNYtk8ZlmWHuCcY2gnks1j6/WaTCbjPs45BjtSVsNm88KmUQY4H2WlsP/lgMbh93dtduo+zxuGYRgqKV8mBQ5lDblCogAAAABJRU5ErkJggg=='
+            }
           }
           tabs.push(tab)
         }
@@ -257,7 +271,7 @@ export async function refreshTab(tabId: number) {
 export async function focusSearch(windowId: number) {
   const win = BrowserWindow.fromId(windowId)
   if (win == null) return
-  const header = await getHeader(win)
+  const header = getHeader(win)
   if (header == null) return
   header.webContents.focus()
   header.webContents.send('focusing-search')
@@ -293,7 +307,7 @@ export async function handleMoveTabs(tabIds: number[]) {
     if (win == null) {
     }
     if (win != null && win.id != sourceWindow.id) {
-      const header = await getHeader(win)
+      const header = getHeader(win)
 
       const windowBoundsX = {
         left: win.getPosition()[0],
@@ -321,7 +335,7 @@ export async function updateAllWindows() {
   const windows = BrowserWindow.getAllWindows()
   for (const win of windows) {
     if (win == null) return
-    const header = await getHeader(win)
+    const header = getHeader(win)
     const tabs = await getTabs(win.id, '')
     if (tabs.length == 0) {
       deleteWindow(win.id)
@@ -332,11 +346,15 @@ export async function updateAllWindows() {
 
 export async function getSelectedTab(win: BrowserWindow) {
   const tabs = await getTabs(win.id)
-  const header = await getHeader(win)
-  const overlay = await getOverlay(win)
+  const header = getHeader(win)
+  const overlay = getOverlay(win)
   for (const tab of tabs) {
     try {
-      if (tab.id !== header.webContents.id && tab.id !== overlay?.webContents.id) {
+      if (
+        tab.id !== header.webContents.id &&
+        overlay !== null &&
+        tab.id !== overlay.webContents.id
+      ) {
         console.log('TABID is not header/overlay')
         if (!isTabHidden(tab.id)) {
           return tab

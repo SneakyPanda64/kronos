@@ -1,6 +1,8 @@
 import storage from 'electron-json-storage'
 import { HistoryItem, QueryItem } from './interfaces'
 import { getFaviconData } from './favicon'
+import axios from 'axios'
+import { addHistorySync } from './auth'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
@@ -76,6 +78,7 @@ export async function addHistory(item: HistoryItem | QueryItem | any) {
         if (error) throw error
       }
     )
+    await addHistorySync(item)
   }
 }
 

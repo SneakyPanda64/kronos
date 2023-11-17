@@ -1,5 +1,24 @@
 import axios from 'axios'
-import { resetJWT, saveJWT } from './db'
+import { getJWT, resetJWT, saveJWT } from './db'
+import { HistoryItem } from './interfaces'
+
+export async function addHistorySync(item: HistoryItem) {
+  let jwt = await getJWT()
+  if (jwt != '') {
+    await axios
+      .post('https://kronos.atlasservers.net/api/sync/v1/add_history', item, {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
+      })
+      .then((response) => {
+        console.log('RESP', response.statusText)
+      })
+      .catch((err) => {
+        console.log('SYNC error', err)
+      })
+  }
+}
 
 export async function logoutUser() {
   await resetJWT()

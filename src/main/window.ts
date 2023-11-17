@@ -70,7 +70,7 @@ export async function createWindow(
   mainWindow.show()
   const downloads = { '32423432': { filename: 'test.txt' } }
   mainWindow.webContents.session.on('will-download', async () => {
-    const overlay = await getOverlay(mainWindow)
+    const overlay = getOverlay(mainWindow)
     if (overlay == null) return
     console.log('downloads updated')
     overlay.webContents.send('downloads-updated', downloads)
