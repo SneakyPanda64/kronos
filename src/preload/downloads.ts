@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-let downloads = {
+const downloads = {
   watchDownloads: (callback: any) => ipcRenderer.on('download-update', callback)
 }
 

@@ -7,7 +7,7 @@ export default function SearchPanel() {
   const [data, setData] = useState<any>({})
   useEffect(() => {
     window.indexBridge?.overlay.onData((_: any, data: any) => {
-      let d = JSON.parse(JSON.stringify(data.data))
+      const d = JSON.parse(JSON.stringify(data.data))
       setData(d)
       console.log('smilar', d.similar)
     })

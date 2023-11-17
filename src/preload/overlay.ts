@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-let overlay = {
+const overlay = {
   openOverlay: (
     callback: any,
     type: string,

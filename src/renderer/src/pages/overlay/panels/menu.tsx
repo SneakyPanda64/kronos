@@ -58,6 +58,16 @@ export default function MenuPanel() {
     },
     {
       type: 'link',
+      title: 'Sync',
+      link: 'sync',
+      action: () => {
+        window.indexBridge?.settings.openSettings(() => {
+          closeOverlay()
+        }, 'sync')
+      }
+    },
+    {
+      type: 'link',
       title: 'Settings',
       link: 'settings',
       action: () => {

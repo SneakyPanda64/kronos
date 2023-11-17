@@ -23,9 +23,9 @@ export async function resolveUrl(url: string) {
 }
 
 export async function goToUrl(tabId: number, url: string) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view === null) return
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   const protocols = ['http', 'https']
   const regex = /^(\w+\.\w+(\.\w+)*)/
   url = url.replaceAll('‎', '')
@@ -64,11 +64,7 @@ export async function goToUrl(tabId: number, url: string) {
 
 export async function router(view: BrowserView | BrowserWindow, subPath: string) {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    // try {
     await view.webContents.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#' + subPath) // + '#' + subPath)
-    // } catch (e) {
-    //   console.log('error with router', e)
-    // }
   } else {
     await view.webContents.loadURL(
       'file://' + path.join(__dirname, `../renderer/index.html#${subPath}`)

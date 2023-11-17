@@ -13,9 +13,9 @@ import { createContextMenu } from './contexts'
 const NAVIGATOR_HEIGHT = 80
 
 export async function selectTab(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view == null) return
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win == null) return
   const tabs = await getTabs(win.id)
 
@@ -32,13 +32,13 @@ export async function selectTab(tabId: number) {
 }
 
 export async function deleteTab(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view == null) return
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win == null) return
   await removeTabListeners(view)
   win.removeBrowserView(view)
-    ; (view.webContents as any).destroy()
+  ;(view.webContents as any).destroy()
 
   const header = await getHeader(win)
   if (header != null) {
@@ -52,9 +52,9 @@ export async function removeTabListeners(view: BrowserView) {
 }
 
 export async function applyTabListeners(view: BrowserView) {
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win === null) return
-  let header = await getHeader(win)
+  const header = await getHeader(win)
   if (header != null) {
     view.webContents.setMaxListeners(0)
     view.webContents.on('page-title-updated', async () => {
@@ -63,6 +63,7 @@ export async function applyTabListeners(view: BrowserView) {
     })
     view.webContents.on('did-start-loading', async () => {
       const tabs = await getTabs(win!.id)
+      console.log('did-start-loading', tabs[0].title)
       header.webContents.send('tabs-updated', tabs)
     })
     view.webContents.once('did-finish-load', async () => {
@@ -77,7 +78,7 @@ export async function applyTabListeners(view: BrowserView) {
     view.webContents.on('context-menu', async (_) => {
       createContextMenu(view, 'body')
     })
-    let prevUrls: string[] = []
+    const prevUrls: string[] = []
     view.webContents.on('did-fail-load', async (_, errorCode) => {
       console.log('FAILED', errorCode)
       const tabs = await getTabs(win!.id)
@@ -87,7 +88,7 @@ export async function applyTabListeners(view: BrowserView) {
       if (!prevUrls.includes(url)) {
         console.log('new NAVIGATED!')
         if (!getWindowData(win!).private) {
-          let favicon_url = await getFavicon(view)
+          const favicon_url = await getFavicon(view)
           addHistory({
             id: `${uuidv4()}`,
             favicon: favicon_url ?? 'navigated',
@@ -100,7 +101,6 @@ export async function applyTabListeners(view: BrowserView) {
       }
     })
     view.webContents.on('page-favicon-updated', async (_, favicons) => {
-      // let win = getWindow()
       const tabs = await getTabs(win!.id, favicons[0])
       header.webContents.send('tabs-updated', tabs)
     })
@@ -108,7 +108,7 @@ export async function applyTabListeners(view: BrowserView) {
 }
 
 export async function createTab(windowId: number, url = '') {
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win === null) return
   const isPrivate = getWindowData(win).private
   const privateSession = session.fromPartition('empty-session')
@@ -133,7 +133,7 @@ export async function createTab(windowId: number, url = '') {
   view.setAutoResize({ width: false, height: false })
   await applyTabListeners(view)
   if (url === '') {
-    let urlHash = encode('‎', true)
+    const urlHash = encode('‎', true)
     router(view, `search?id=none&url=${urlHash}&verify=6713de00-4386-4a9f-aeb9-0949b3e71eb7`)
     focusSearch(windowId)
   } else {
@@ -144,7 +144,7 @@ export async function createTab(windowId: number, url = '') {
 }
 
 export async function getTabs(windowId: number, favicon = '') {
-  let tabs: {
+  const tabs: {
     id: number
     title: string
     url: string
@@ -155,41 +155,43 @@ export async function getTabs(windowId: number, favicon = '') {
       canGoForward: boolean
     }
   }[] = []
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win === null) return []
   for (const elem of win.getBrowserViews()) {
     if (
       elem != null &&
       elem.webContents != null &&
       elem.webContents.id != (await getHeader(win!)).webContents.id &&
-      !(await isOverlay(elem))
+      !(await isOverlay(elem)) &&
+      !elem.webContents.getURL().includes('f1f0313f-8a5b-4ffd-b137-167fb439ddb0')
     ) {
       try {
-        let favicon_url = await getFavicon(elem)
+        const favicon_url = await getFavicon(elem)
         let fav: any
         if (elem.webContents !== null) {
+          console.log('getting fav data', elem.webContents.getURL())
           fav = await getFaviconData(
             elem.webContents.getURL() === null ? '' : elem.webContents.getURL(),
             favicon !== '' ? favicon : favicon_url
           )
         }
-
-        // console.log('FAVICON LENGTH', fav.length)
-        let tab = {
-          id: elem.webContents.id,
-          title: elem.webContents.getTitle() ?? 'no title',
-          url: elem.webContents.getURL(),
-          favicon: fav,
-          navigation: {
-            isLoading: elem.webContents.isLoading(),
-            canGoBack: elem.webContents.canGoBack(),
-            canGoForward: elem.webContents.canGoForward()
+        if (elem.webContents !== null) {
+          const tab = {
+            id: elem.webContents.id,
+            title: elem.webContents.getTitle() ?? 'no title',
+            url: elem.webContents.getURL(),
+            favicon: fav,
+            navigation: {
+              isLoading: elem.webContents.isLoading(),
+              canGoBack: elem.webContents.canGoBack(),
+              canGoForward: elem.webContents.canGoForward()
+            }
           }
+          if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
+            tab.url = ''
+          }
+          tabs.push(tab)
         }
-        if (elem.webContents.getURL().includes('c8c75395-ae19-435d-8683-21109a112d6e')) {
-          tab.url = ''
-        }
-        tabs.push(tab)
       } catch (e) {
         console.log('error occured', e)
       }
@@ -199,18 +201,18 @@ export async function getTabs(windowId: number, favicon = '') {
 }
 
 export async function hideTab(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view == null) return
   view.setBounds({ x: 0, y: 0, width: 0, height: 0 })
   view.setAutoResize({ width: false, height: false })
 }
 
 export async function showTab(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view == null) return
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win == null) return
-  let wb = win.getBounds()
+  const wb = win.getBounds()
   view.setBounds({
     x: 0,
     y: NAVIGATOR_HEIGHT,
@@ -221,7 +223,7 @@ export async function showTab(tabId: number) {
 }
 
 export function isTabHidden(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view == null) return
   const bounds = view.getBounds()
   if (bounds.width + bounds.height === 0) {
@@ -231,7 +233,7 @@ export function isTabHidden(tabId: number) {
 }
 
 export async function goBack(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view === null) return
   if (view.webContents.canGoBack()) {
     view.webContents.goBack()
@@ -239,7 +241,7 @@ export async function goBack(tabId: number) {
 }
 
 export async function goForward(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view === null) return
   if (view.webContents.canGoForward()) {
     view.webContents.goForward()
@@ -247,13 +249,13 @@ export async function goForward(tabId: number) {
 }
 
 export async function refreshTab(tabId: number) {
-  let view = getViewById(tabId)
+  const view = getViewById(tabId)
   if (view === null) return
   view.webContents.reload()
 }
 
 export async function focusSearch(windowId: number) {
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win == null) return
   const header = await getHeader(win)
   if (header == null) return
@@ -262,13 +264,13 @@ export async function focusSearch(windowId: number) {
 }
 
 export async function moveTabs(tabIds: number[], newWindowId: number) {
-  let newWindow = BrowserWindow.fromId(newWindowId)
+  const newWindow = BrowserWindow.fromId(newWindowId)
   if (newWindow == null) return
-  let newTabIds: number[] = []
+  const newTabIds: number[] = []
   tabIds.forEach(async (id) => {
-    let view = getViewById(id)
+    const view = getViewById(id)
     if (view === null) return
-    let oldWindow = BrowserWindow.fromBrowserView(view)
+    const oldWindow = BrowserWindow.fromBrowserView(view)
     if (oldWindow == null) return
     newWindow!.addBrowserView(view)
     await applyTabListeners(view)
@@ -283,9 +285,9 @@ export async function handleMoveTabs(tabIds: number[]) {
 
   const windows = BrowserWindow.getAllWindows()
   if (tabIds.length == 0) return
-  let sourceView = getViewById(tabIds[0])
+  const sourceView = getViewById(tabIds[0])
   if (sourceView == null) return
-  let sourceWindow = BrowserWindow.fromBrowserView(sourceView)
+  const sourceWindow = BrowserWindow.fromBrowserView(sourceView)
   if (sourceWindow == null) return
   for (const win of windows) {
     if (win == null) {
@@ -293,11 +295,11 @@ export async function handleMoveTabs(tabIds: number[]) {
     if (win != null && win.id != sourceWindow.id) {
       const header = await getHeader(win)
 
-      let windowBoundsX = {
+      const windowBoundsX = {
         left: win.getPosition()[0],
         right: win.getPosition()[0] + header.getBounds().width
       }
-      let windowBoundsY = {
+      const windowBoundsY = {
         top: win.getPosition()[1],
         bottom: win.getPosition()[1] + header.getBounds().height
       }
@@ -319,8 +321,8 @@ export async function updateAllWindows() {
   const windows = BrowserWindow.getAllWindows()
   for (const win of windows) {
     if (win == null) return
-    let header = await getHeader(win)
-    let tabs = await getTabs(win.id, '')
+    const header = await getHeader(win)
+    const tabs = await getTabs(win.id, '')
     if (tabs.length == 0) {
       deleteWindow(win.id)
     }
@@ -329,9 +331,9 @@ export async function updateAllWindows() {
 }
 
 export async function getSelectedTab(win: BrowserWindow) {
-  let tabs = await getTabs(win.id)
-  let header = await getHeader(win)
-  let overlay = await getOverlay(win)
+  const tabs = await getTabs(win.id)
+  const header = await getHeader(win)
+  const overlay = await getOverlay(win)
   for (const tab of tabs) {
     try {
       if (tab.id !== header.webContents.id && tab.id !== overlay?.webContents.id) {
@@ -340,7 +342,7 @@ export async function getSelectedTab(win: BrowserWindow) {
           return tab
         }
       }
-    } catch (e) { }
+    } catch (e) {}
   }
   return null
 }

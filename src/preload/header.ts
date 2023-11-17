@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-let header = {
+const header = {
   focusSearch: (callback: any) => {
     ipcRenderer.once('focus-search-reply', (_) => {
       callback()

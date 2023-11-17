@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-let window = {
+const window = {
   createWindow: (
     callback: any,
     tabIds: number[],

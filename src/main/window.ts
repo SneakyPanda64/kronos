@@ -1,10 +1,9 @@
-import { BrowserWindow, screen, ThumbarButton, nativeImage, session } from 'electron'
+import { BrowserWindow, screen, ThumbarButton, nativeImage } from 'electron'
 import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
 import { getOverlay } from './overlay'
-import { readFileSync, writeFileSync } from 'fs'
-import fetch from 'cross-fetch' // required 'fetch'
+import fetch from 'cross-fetch'
 
 import { ElectronBlocker } from '@cliqz/adblocker-electron'
 export async function createWindow(
@@ -14,7 +13,7 @@ export async function createWindow(
   privateWindow = false
 ): Promise<void> {
   console.log(position)
-  let size = {
+  const size = {
     width: 600,
     height: 600
   }
@@ -62,16 +61,16 @@ export async function createWindow(
   await createHeader(mainWindow)
 
   if (tabIds.length == 0) {
-    let tabId = await createTab(mainWindow.id)
+    const tabId = await createTab(mainWindow.id)
     await selectTab(tabId!)
   }
 
   await moveTabs(tabIds, mainWindow.id)
 
   mainWindow.show()
-  let downloads = { '32423432': { filename: 'test.txt' } }
+  const downloads = { '32423432': { filename: 'test.txt' } }
   mainWindow.webContents.session.on('will-download', async () => {
-    let overlay = await getOverlay(mainWindow)
+    const overlay = await getOverlay(mainWindow)
     if (overlay == null) return
     console.log('downloads updated')
     overlay.webContents.send('downloads-updated', downloads)
@@ -79,21 +78,21 @@ export async function createWindow(
 }
 
 export function deleteWindow(windowId: number) {
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win == null) return
   console.log('closing window')
   win.close()
 }
 
 export function minimiseWindow(windowId: number) {
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win == null) return
   console.log('minimising')
   if (win.minimizable) win.minimize()
 }
 
 export function toggleMaximiseWindow(windowId: number) {
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win == null) return
   console.log('toggle maximise')
   if (win.isMaximized()) {
@@ -105,13 +104,13 @@ export function toggleMaximiseWindow(windowId: number) {
 
 export function moveWindow(windowId: number, position: { x: number; y: number }) {
   const { x, y } = screen.getCursorScreenPoint()
-  let win = BrowserWindow.fromId(windowId)
+  const win = BrowserWindow.fromId(windowId)
   if (win == null) return
   if (position === undefined) {
     const OFFSET = 150
     const Y_OFFSET = 50
-    let distScreen = screen.getDisplayNearestPoint({ x: x, y: y })
-    let windowBounds = {
+    const distScreen = screen.getDisplayNearestPoint({ x: x, y: y })
+    const windowBounds = {
       x: {
         left: distScreen.bounds.x + OFFSET,
         right: distScreen.bounds.x + distScreen.bounds.width - OFFSET
@@ -121,7 +120,7 @@ export function moveWindow(windowId: number, position: { x: number; y: number })
         bottom: distScreen.bounds.y + distScreen.bounds.height - Y_OFFSET
       }
     }
-    let newPosition = { x: x, y: y }
+    const newPosition = { x: x, y: y }
     if (newPosition.x < windowBounds.x.left) {
       newPosition.x = windowBounds.x.left
     }

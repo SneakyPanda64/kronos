@@ -65,7 +65,7 @@ export default function TabButton(props: {
               ) : props.tab.favicon != '' ? (
                 <img
                   className={`w-4 h-4 ml-1 mr-2 my-auto select-none`}
-                  src={`data:image/jpeg;charset=utf-8;base64,${props.tab.favicon}`}
+                  src={`data:image/png;charset=utf-8;base64,${props.tab.favicon}`}
                   style={{ display: 'none' }}
                   width={15}
                   height={15}

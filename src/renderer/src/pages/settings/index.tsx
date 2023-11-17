@@ -19,11 +19,12 @@ export default function Settings() {
     <div className="grid grid-cols-5 lg:grid-cols-5 overflow-hidden">
       <Helmet>
         <title>Settings</title>
+        <link rel="icon" href="./src/assets/settings.png" />
       </Helmet>
       <div className="h-screen hidden sm:block">
         <Sidebar />
       </div>
-      <div className="col-span-4 h-screen text-white overflow-x-hidden overflow-y-auto pr-12">
+      <div className="col-span-5 sm:col-span-4 h-screen text-white overflow-x-hidden overflow-y-auto pr-12">
         {pages[searchParams.get('type') ?? 'settings']}
       </div>
     </div>

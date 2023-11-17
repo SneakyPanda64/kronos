@@ -6,6 +6,12 @@ const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
 const searchUrls = ['https://duckduckgo.com/?q=', 'https://www.google.com/search?q=']
 
+export async function resetJWT() {
+  storage.set('auth', {
+    jwt: ''
+  })
+}
+
 export async function saveJWT(jwt: string) {
   storage.set(
     'auth',
@@ -25,6 +31,8 @@ export async function getJWT() {
         reject(error)
       } else {
         try {
+          console.log('???', data.jwt)
+
           resolve(data.jwt ?? '')
         } catch (e) {
           reject(e)

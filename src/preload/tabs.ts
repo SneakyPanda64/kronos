@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron')
 
-let tabs = {
+const tabs = {
   watchTabs: (callback: any) => ipcRenderer.on('tabs-updated', callback),
   watchSelectedTab: (callback: any) => ipcRenderer.on('selected-tab-updated', callback),
   requestTabs: (callback: any) => {

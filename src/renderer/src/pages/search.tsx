@@ -18,7 +18,6 @@ export default function SearchPage() {
       <Helmet>
         <link rel="icon" href="./src/assets/google.png" />
       </Helmet>
-      <link rel="icon" href="./src/assets/google.png" />
       <div className="mx-auto pt-40 text-center justify-center w-3/4 md:w-1/2 lg:w-1/3">
         <h1 className="text-6xl pb-12">Kronos</h1>
         <div

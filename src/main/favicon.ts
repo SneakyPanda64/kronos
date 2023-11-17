@@ -10,9 +10,9 @@ export async function getFaviconData(url: string, faviconUrl = '') {
   if (url.includes('6713de00-4386-4a9f-aeb9-0949b3e71eb7')) {
     domain = domain + '/' + url.split('#')[1].split('?')[0]
   }
-  let urlHash = encode(domain, true)
+  const urlHash = encode(domain, true)
   const rootPath = path.join(app.getPath('userData'), 'favicons')
-  let filePath = path.join(rootPath, `${urlHash}.png`)
+  const filePath = path.join(rootPath, `${urlHash}.png`)
   if (faviconUrl != '' && !fs.existsSync(filePath)) {
     if (!fs.existsSync(rootPath)) {
       fs.mkdirSync(rootPath)

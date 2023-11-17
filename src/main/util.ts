@@ -2,9 +2,9 @@
 import { BrowserView, BrowserWindow } from 'electron'
 
 export function windowFromViewId(viewId: number) {
-  let view = getViewById(viewId)
+  const view = getViewById(viewId)
   if (view == null) return null
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win === null) return null
   return win
 }

@@ -8,7 +8,7 @@ let LAST_WINDOW = -1
 export async function closeOverlay(win: BrowserWindow) {
   LAST_OVERLAY = ''
   LAST_WINDOW = -1
-  let view: BrowserView | null = await getOverlay(win)
+  const view: BrowserView | null = await getOverlay(win)
   if (view == null) {
     return
   }
@@ -25,7 +25,7 @@ export async function openOverlay(
   focus: boolean
 ) {
   if (LAST_OVERLAY === type && LAST_WINDOW === win.id) {
-    let overlay = await getOverlay(win)
+    const overlay = await getOverlay(win)
     if (overlay == null) return
     overlay.setBounds({
       width: size.width,
@@ -37,7 +37,7 @@ export async function openOverlay(
   }
   LAST_OVERLAY = type
   LAST_WINDOW = win.id
-  let view = new BrowserView({
+  const view = new BrowserView({
     webPreferences: {
       devTools: true,
       nodeIntegration: true,
@@ -50,7 +50,7 @@ export async function openOverlay(
     await closeOverlay(win)
   })
   win.addBrowserView(view)
-  let pos = {
+  const pos = {
     x: Math.round(position.x),
     y: Math.round(position.y)
   }
@@ -58,7 +58,7 @@ export async function openOverlay(
     pos.x += size.width
   }
   try {
-    await router(view, `overlay?id=none&type=${type}`)
+    await router(view, `overlay?id=none&type=${type}&verify=f1f0313f-8a5b-4ffd-b137-167fb439ddb0`)
   } catch (e) {
     return
   }

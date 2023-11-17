@@ -44,7 +44,7 @@ export default function TabBar(props: {
           }
         })
       }
-      let validPos: number[] = []
+      const validPos: number[] = []
       posMap.forEach((pos) => {
         if (Object.keys(props.tabs).includes(`${pos}`)) {
           validPos.push(pos)
@@ -90,8 +90,8 @@ export default function TabBar(props: {
   }
 
   const handleUpdateTabs = (tabs: Tab[]) => {
-    let newPosMap: number[] = posMap
-    let newTabList = {}
+    const newPosMap: number[] = posMap
+    const newTabList = {}
     tabs.forEach((tab) => {
       if (tab.url.includes('6713de00-4386-4a9f-aeb9-0949b3e71eb7')) {
         const hashIndex = tab.url.indexOf('#')
@@ -99,9 +99,8 @@ export default function TabBar(props: {
         const queryParams = new URLSearchParams(hashString.substring(1))
         console.log('has', queryParams.get('url'))
 
-        let decodedUrl = decode(queryParams.get('url') ?? '')
+        const decodedUrl = decode(queryParams.get('url') ?? '')
         tab.url = decodedUrl
-        tab.favicon = 'WARNING'
       }
       newTabList[tab.id] = tab
       if (!posMap.includes(tab.id)) {
@@ -156,14 +155,14 @@ export default function TabBar(props: {
                   }
                 })
                 console.log('NEW TAB INDEX!!!', newTabIndex)
-                let validPos: number[] = []
+                const validPos: number[] = []
                 posMap.forEach((pos) => {
                   if (Object.keys(props.tabs).includes(`${pos}`)) {
                     validPos.push(pos)
                   }
                 })
 
-                let newTab = props.tabs[validPos[newTabIndex]]
+                const newTab = props.tabs[validPos[newTabIndex]]
                 window.indexBridge?.tabs.selectTab(newTab.id ?? props.tabs[0])
                 props.setSelectedTab(newTab.id ?? props.tabs[0])
               }
@@ -187,7 +186,7 @@ export default function TabBar(props: {
               {(provided) => (
                 <ul className=" flex" {...provided.droppableProps} ref={provided.innerRef}>
                   {posMap.map((id, index) => {
-                    let item = props.tabs[id]
+                    const item = props.tabs[id]
                     if (item == undefined) return
                     console.log('ID', id)
                     return (
@@ -199,14 +198,14 @@ export default function TabBar(props: {
                             {...provided.dragHandleProps}
                             className={'outline-none ring-0'}
                           >
-                            {TabButton({
-                              tab: item,
-                              key: index,
-                              selectedTab: props.selectedTab,
-                              setSelectedTab: props.setSelectedTab,
-                              handleTab: handleTab,
-                              handleDeleteTab: handleDeleteTab
-                            })}
+                            <TabButton
+                              tab={item}
+                              key={index}
+                              selectedTab={props.selectedTab}
+                              setSelectedTab={props.setSelectedTab}
+                              handleTab={handleTab}
+                              handleDeleteTab={handleDeleteTab}
+                            />
                           </li>
                         )}
                       </Draggable>

@@ -69,7 +69,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
   }, [])
 
   useEffect(() => {
-    let newUrl = getURL()
+    const newUrl = getURL()
     if (newUrl !== url && newUrl != '') {
       setUrl(newUrl.replaceAll('‎', ''))
     }
@@ -137,7 +137,7 @@ export default function SearchBar(props: { selectedTab: any; tabs: Tab[] }) {
     let protocol = url.split('://')[0] + '://'
     if (url.split('://').length < 2) protocol = ''
     let path = url.replace(protocol, '')
-    let domain = path.split('/')[0]
+    const domain = path.split('/')[0]
     path = path.replace(domain, '')
     return (
       <p className="text-s-light-gray whitespace-nowrap overflow-hidden">

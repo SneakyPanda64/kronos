@@ -64,7 +64,7 @@ export default function ContextPanel() {
   const [data, setData] = useState<any>({})
   useEffect(() => {
     window.indexBridge?.overlay.onData((_: any, data: any) => {
-      let d = JSON.parse(data)
+      const d = JSON.parse(data)
       setData(d.data)
       console.log('data2', d.data)
     })

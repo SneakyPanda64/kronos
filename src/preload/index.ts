@@ -10,7 +10,7 @@ import { downloads } from './downloads'
 import { auth } from './auth'
 console.log('loaded preload')
 
-let indexBridge = {
+const indexBridge = {
   tabs,
   header,
   navigation,

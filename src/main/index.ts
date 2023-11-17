@@ -25,9 +25,9 @@ import { goToUrl, router } from './url'
 import { getViewById, windowFromViewId } from './util'
 import { closeOverlay, getOverlay, openOverlay } from './overlay'
 import { encode } from 'js-base64'
-import { getHistory } from './db'
+import { getHistory, getJWT } from './db'
 import { registerShortcuts } from './shortcuts'
-import { registerUser } from './auth'
+import { loginUser, logoutUser, registerUser } from './auth'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 app.setName('Kronos')
@@ -39,8 +39,8 @@ app.whenReady().then(() => {
 
   app.on('web-contents-created', (_, contents) => {
     contents.setWindowOpenHandler((details) => {
-      let view = getViewById(contents.id)
-      let win = BrowserWindow.fromBrowserView(view!)
+      const view = getViewById(contents.id)
+      const win = BrowserWindow.fromBrowserView(view!)
       createTab(win!.id, details.url).then((tabId) => {
         if (tabId !== undefined) selectTab(tabId)
       })
@@ -56,7 +56,7 @@ app.whenReady().then(() => {
     'create-window',
     async (event, tabIds: number[], onMouse = false, maximised = false, privateWindow = false) => {
       console.log('creating new window')
-      let pos = {
+      const pos = {
         x: 0,
         y: 0
       }
@@ -72,9 +72,9 @@ app.whenReady().then(() => {
 
   ipcMain.on('request-tabs', async (event) => {
     console.log('requesting tabs')
-    let view = getViewById(event.sender.id)
+    const view = getViewById(event.sender.id)
     if (view == null) return
-    let win = BrowserWindow.fromBrowserView(view)
+    const win = BrowserWindow.fromBrowserView(view)
     if (win === null) return
     const tabs = await getTabs(win.id)
 
@@ -82,7 +82,7 @@ app.whenReady().then(() => {
   })
   ipcMain.on('move-tabs', async (event, tabIds) => {
     console.log('holding tabs', tabIds)
-    let moved = await handleMoveTabs(tabIds)
+    const moved = await handleMoveTabs(tabIds)
     await updateAllWindows()
     event.reply('move-tabs-reply', moved)
   })
@@ -91,9 +91,9 @@ app.whenReady().then(() => {
     await selectTab(tabId)
   })
   ipcMain.on('new-tab', async (event, url: string) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
-    let tabId = await createTab(win.id)
+    const tabId = await createTab(win.id)
     if (url != '') {
       await goToUrl(tabId!, url)
     }
@@ -111,30 +111,30 @@ app.whenReady().then(() => {
     event.reply('refresh-tab-reply')
   })
   ipcMain.on('request-selected-tab', async (event) => {
-    let win = BrowserWindow.getFocusedWindow()
+    const win = BrowserWindow.getFocusedWindow()
     if (win === null) return
-    let tab = await getSelectedTab(win)
+    const tab = await getSelectedTab(win)
     if (tab === null) return
     event.reply('request-selected-tab-reply', tab.id)
   })
   ipcMain.on('open-inspect', async (event, tabId: number) => {
-    let view = getViewById(tabId)
+    const view = getViewById(tabId)
     if (view == null) return
     openInspect(view)
     event.reply('open-inspect-reply')
   })
   ipcMain.on('close-window', async (event) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     deleteWindow(win.id)
   })
   ipcMain.on('min-window', async (event) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     minimiseWindow(win.id)
   })
   ipcMain.on('toggle-max-window', async (event) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     toggleMaximiseWindow(win.id)
   })
@@ -149,11 +149,11 @@ app.whenReady().then(() => {
   })
   ipcMain.on('open-settings', async (event, type: string) => {
     console.log('opening settings')
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
-    let tab = await getSelectedTab(win)
+    const tab = await getSelectedTab(win)
     if (tab == null) return
-    let view = getViewById(tab.id)
+    const view = getViewById(tab.id)
     if (view == null) return
     console.log('opening settings: ', type)
     const urlHash = encode(`amenoi://settings/${type}`, true)
@@ -169,14 +169,14 @@ app.whenReady().then(() => {
     event.reply('go-forward-reply')
   })
   ipcMain.on('focus-search', async (event) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     await focusSearch(win.id)
     event.reply('focus-search-reply')
   })
   ipcMain.on('move-window', async (event, position: { x: number; y: number }) => {
     console.log('move window')
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     moveWindow(win.id, position)
     event.reply('move-window-reply', event.sender.id)
@@ -190,34 +190,49 @@ app.whenReady().then(() => {
       size: { width: number; height: number },
       focus: boolean
     ) => {
-      let win = windowFromViewId(event.sender.id)
+      const win = windowFromViewId(event.sender.id)
       if (win === null) return
       await openOverlay(win, type, position, size, focus)
+
       event.reply('open-overlay-reply')
     }
   )
   ipcMain.on('close-overlay', async (event) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
     await closeOverlay(win)
     event.reply('close-overlay-reply')
   })
   ipcMain.on('send-overlay-data', async (event, data: any) => {
-    let win = windowFromViewId(event.sender.id)
+    const win = windowFromViewId(event.sender.id)
     if (win === null) return
-    let overlay = await getOverlay(win)
+    const overlay = await getOverlay(win)
     if (overlay == null) return
     overlay.webContents.send('sending-overlay-data', data)
     event.reply('send-overlay-data-reply')
   })
   ipcMain.on('get-history', async (event) => {
-    let history = await getHistory()
+    const history = await getHistory()
     event.reply('get-history-reply', history)
   })
-  ipcMain.on('register-user', async (_, email: string, password: string) => {
+  ipcMain.on('logout', async (event) => {
+    await logoutUser()
+    event.reply('logout-reply')
+  })
+  ipcMain.on('register-user', async (event, email: string, password: string) => {
     console.log(email, password)
-    let error = registerUser(email, password)
-    return error
+    const error = await registerUser(email, password)
+    event.reply('register-user-reply', error)
+  })
+  ipcMain.on('login-user', async (event, email: string, password: string) => {
+    console.log(email, password)
+    const error = await loginUser(email, password)
+    console.log('ERROR?', error)
+    event.reply('login-user-reply', error)
+  })
+  ipcMain.on('get-jwt', async (event) => {
+    const jwt = await getJWT()
+    event.reply('get-jwt-reply', jwt)
   })
   createWindow([], { x: 100, y: 100 })
   registerShortcuts()

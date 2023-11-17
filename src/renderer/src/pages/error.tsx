@@ -7,13 +7,13 @@ import { Helmet } from 'react-helmet'
 export default function ErrorPage() {
   const [searchParams] = useSearchParams()
   console.log(searchParams)
-  let error = errors[searchParams.get('id') ?? 'DEFAULT'] ?? errors.DEFAULT
+  const error = errors[searchParams.get('id') ?? 'DEFAULT'] ?? errors.DEFAULT
   console.log('ERROR', error)
   const parseText = (text: string): string => {
     let newText = text
     let decodedUrl = decode(searchParams.get('url') ?? '')
     decodedUrl = Base64.decode(decodedUrl)
-    let vars = {
+    const vars = {
       URL: decodedUrl,
       ERROR_CODE: searchParams.get('id') ?? ''
     }

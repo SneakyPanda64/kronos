@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function RegisterForm() {
+export default function Form(props: { login: boolean; setLogin: any; setIsLoggedIn: any }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -15,7 +15,11 @@ export default function RegisterForm() {
       setError('Password is too long')
     } else {
       setError('')
-      postRegister(email, password)
+      if (props.login) {
+        postLogin(email, password)
+      } else {
+        postRegister(email, password)
+      }
     }
   }
   const postRegister = (email: string, password: string) => {
@@ -23,6 +27,23 @@ export default function RegisterForm() {
       (error: string) => {
         console.log('registered', error)
         setError(error)
+        if (error == '') {
+          props.setIsLoggedIn(true)
+        }
+      },
+      email,
+      password
+    )
+  }
+  const postLogin = (email: string, password: string) => {
+    console.log('Post login')
+    window.indexBridge?.auth.login(
+      (error: string) => {
+        console.log('logged in', error)
+        setError(error)
+        if (error == '') {
+          props.setIsLoggedIn(true)
+        }
       },
       email,
       password
@@ -33,7 +54,9 @@ export default function RegisterForm() {
       <div className=" ">
         <div className="my-auto mx-auto text-center pt-32">
           <div className="text-5xl bg-s-dark-gray w-1/3 mx-auto py-6 px-4 rounded-xl shadow-xl">
-            <h1 className="px-12 font-semibold text-left">Kronos Registration</h1>
+            <h1 className="px-12 font-semibold text-left">
+              Kronos {props.login ? 'Login' : 'Sign up'}
+            </h1>
             <div className="text-left pt-8 text-3xl mx-auto px-12">
               <div className="text-2xl">
                 <h2 className="pb-2">Email</h2>
@@ -58,8 +81,17 @@ export default function RegisterForm() {
                 onClick={handleRegister}
                 className="mt-8 bg-s-blue w-full py-3 px-2 font-semibold rounded-lg"
               >
-                Register
+                {props.login ? 'Login' : 'Register'}
               </button>
+              <div className="text-sm pt-2">
+                Already have an account?{' '}
+                <span
+                  onClick={() => props.setLogin(!props.login)}
+                  className="text-s-blue underline hover:cursor-pointer"
+                >
+                  {props.login ? 'Register' : 'Login'}
+                </span>
+              </div>
               <div className="pt-4 text-lg text-red-500">
                 {error !== '' ? <h1>Error - {error}</h1> : <div></div>}
               </div>

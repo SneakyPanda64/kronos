@@ -35,7 +35,7 @@ export async function createHeader(win: BrowserWindow) {
   view.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: NAVIGATOR_HEIGHT })
 
   view.setAutoResize({ width: true, height: false })
-  let data = (win as any).data
+  const data = (win as any).data
   await router(view, data.private ? '?id=none&private=true' : '')
   win.on('unmaximize', () => {
     console.log('left full screen')

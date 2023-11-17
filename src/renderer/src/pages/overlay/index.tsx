@@ -12,7 +12,7 @@ export default function Overlay() {
     context: <ContextPanel />
   }
   const [searchParams] = useSearchParams()
-  let type = searchParams.get('type') ?? 'menu'
+  const type = searchParams.get('type') ?? 'menu'
   console.log(searchParams)
   return (
     <div className="bg-s-gray select-none text-white font-normal rounded-sm h-screen w-screen overflow-hidden">

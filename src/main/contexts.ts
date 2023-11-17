@@ -13,17 +13,17 @@ export async function createContextMenu(view: BrowserView, type: string) {
       buttons: ['save-image', 'copy-image', 'new-window', 'inspect', 'close-window']
     }
   }
-  let win = BrowserWindow.fromBrowserView(view)
+  const win = BrowserWindow.fromBrowserView(view)
   if (win == null) return
   const { x, y } = screen.getCursorScreenPoint()
-  let pos = {
+  const pos = {
     x: x - win!.getPosition()[0],
     y: y - win!.getPosition()[1]
   }
   await openOverlay(win!, 'context', { x: pos.x, y: pos.y }, { width: 175, height: 100 }, true)
-  let overlay = await getOverlay(win)
+  const overlay = await getOverlay(win)
   if (overlay == null) return
-  let data = JSON.stringify({
+  const data = JSON.stringify({
     data: { buttons: menus[type]['buttons'] }
   })
   overlay.webContents.send('sending-overlay-data', data)

@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-let navigation = {
+const navigation = {
   goToUrl: (callback: any, tabId: number, url: string) => {
     ipcRenderer.once('go-to-url-reply', (_) => {
       callback()
