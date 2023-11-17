@@ -24,7 +24,10 @@ export async function createHeader(win: BrowserWindow) {
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
-      preload: path.join(__dirname, '../preload/index.js')
+      preload: path.join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
     }
   })
   // @ts-ignore

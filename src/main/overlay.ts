@@ -44,8 +44,8 @@ export async function openOverlay(
   const view = new BrowserView({
     webPreferences: {
       devTools: true,
-      nodeIntegration: true,
-      webSecurity: false,
+      nodeIntegration: false,
+      contextIsolation: true,
       preload: path.join(__dirname, '../preload/index.js')
     }
   })
