@@ -35,7 +35,7 @@ export async function addHistory(item: HistoryItem | QueryItem | any) {
 
 export async function getHistory() {
   return new Promise((resolve, reject) => {
-    storage.get('history', async (error, data) => {
+    storage.get('history', async (error, data: any) => {
       if (error) {
         reject(error)
       } else {
