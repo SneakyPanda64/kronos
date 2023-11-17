@@ -25,7 +25,7 @@ const buttons: ContextButton[] = [
     title: 'Close Window',
     action: () => {
       window.indexBridge?.tabs.requestSelectedTab(() => {
-        window.indexBridge?.window.closeWindow(() => {})
+        window.indexBridge?.window.closeWindow()
       })
     },
     icon: <IoMdClose />

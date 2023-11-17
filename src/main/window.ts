@@ -1,4 +1,4 @@
-import { BrowserWindow, screen, ThumbarButton, nativeImage } from 'electron'
+import { BrowserWindow, screen } from 'electron'
 import { createTab, moveTabs, selectTab } from './tab'
 import icon from '../../resources/icon.png?asset'
 import { createHeader } from './header'
@@ -30,6 +30,7 @@ export async function createWindow(
     titleBarStyle: 'hidden',
     frame: false,
     icon: icon,
+    title: 'Kronos',
     webPreferences: {
       sandbox: true,
       contextIsolation: true,
@@ -40,22 +41,6 @@ export async function createWindow(
   mainWindow.data = {
     private: privateWindow
   }
-  const thumbarButtons: ThumbarButton[] = [
-    {
-      tooltip: 'Open',
-      icon: nativeImage.createFromPath('../../resources/icon.png'),
-      click: () => {
-        mainWindow.show()
-      }
-    },
-    {
-      tooltip: 'Exit',
-      icon: nativeImage.createFromPath('../../resources/icon.png'),
-      click: () => {}
-    }
-  ]
-
-  mainWindow.setThumbarButtons(thumbarButtons)
   await loadBlocker(mainWindow)
   console.log('CREATING WINDOW WITH', privateWindow)
   await createHeader(mainWindow)

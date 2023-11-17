@@ -50,7 +50,7 @@ export async function getHistory() {
 
             const entries = Object.entries(data.history)
             const sortedEntries = entries.sort((a: any, b: any) => b[1].timestamp - a[1].timestamp)
-            const promises = sortedEntries.map(async ([id, entry]) => {
+            const promises = sortedEntries.map(async ([_, entry]) => {
               if ((entry as any).url !== undefined && (entry as any).url !== '') {
                 const favicon = await getFaviconData((entry as any).url ?? '')
                 return {

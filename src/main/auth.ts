@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { HistoryItem } from './interfaces'
 import storage from 'electron-json-storage'
 
 export async function logoutUser() {
@@ -42,9 +41,13 @@ export async function loginUser(email: string, password: string) {
 }
 
 export async function resetJWT() {
-  storage.set('auth', {
-    jwt: ''
-  })
+  storage.set(
+    'auth',
+    {
+      jwt: ''
+    },
+    () => {}
+  )
 }
 
 export async function saveJWT(jwt: string) {
@@ -61,7 +64,7 @@ export async function saveJWT(jwt: string) {
 
 export async function getJWT() {
   return new Promise((resolve, reject) => {
-    storage.get('auth', async (error, data) => {
+    storage.get('auth', async (error, data: any) => {
       if (error) {
         reject(error)
       } else {
