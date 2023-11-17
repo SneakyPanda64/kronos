@@ -90,7 +90,7 @@ export async function applyTabListeners(view: BrowserView) {
         if (!getWindowData(win!).private) {
           const favicon_url = await getFavicon(view)
           addHistory({
-            id: `${uuidv4()}`,
+            id: uuidv4(),
             favicon: favicon_url ?? 'navigated',
             title: view.webContents.getTitle(),
             url: url,
@@ -169,7 +169,6 @@ export async function getTabs(windowId: number, favicon = '') {
         const favicon_url = await getFavicon(elem)
         let fav: any
         if (elem.webContents !== null) {
-          console.log('getting fav data', elem.webContents.getURL())
           fav = await getFaviconData(
             elem.webContents.getURL() === null ? '' : elem.webContents.getURL(),
             favicon !== '' ? favicon : favicon_url

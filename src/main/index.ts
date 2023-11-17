@@ -25,9 +25,9 @@ import { goToUrl, router } from './url'
 import { getViewById, windowFromViewId } from './util'
 import { closeOverlay, getOverlay, openOverlay } from './overlay'
 import { encode } from 'js-base64'
-import { getHistory, getJWT } from './db'
+import { clearHistory, getHistory, syncHistory } from './db'
 import { registerShortcuts } from './shortcuts'
-import { loginUser, logoutUser, registerUser } from './auth'
+import { getJWT, loginUser, logoutUser, registerUser } from './auth'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 app.setName('Kronos')
@@ -215,6 +215,10 @@ app.whenReady().then(() => {
     const history = await getHistory()
     event.reply('get-history-reply', history)
   })
+  ipcMain.on('clear-history', async (event) => {
+    await clearHistory()
+    event.reply('clear-history-reply')
+  })
   ipcMain.on('logout', async (event) => {
     await logoutUser()
     event.reply('logout-reply')
@@ -236,6 +240,7 @@ app.whenReady().then(() => {
   })
   createWindow([], { x: 100, y: 100 })
   registerShortcuts()
+  syncHistory()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow([], { x: 0, y: 0 }, false)

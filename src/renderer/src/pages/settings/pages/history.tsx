@@ -23,7 +23,7 @@ export default function HistoryPage() {
       setHistory(items)
     })
   }, [])
-  const searchComponent = () => {
+  const SearchComponent = () => {
     return (
       <div className="mt-6 mb-8">
         <h1 className="text-2xl py-2">Search History</h1>
@@ -33,6 +33,20 @@ export default function HistoryPage() {
           placeholder="search history"
           className="w-1/3 bg-s-dark-gray p-2 rounded-xl ring-0 outline-none px-4"
         />
+      </div>
+    )
+  }
+  const ClearHistory = () => {
+    return (
+      <div
+        onClick={() => {
+          window.indexBridge?.history.clearHistory(() => {
+            console.log('cleared history')
+          })
+        }}
+        className="bg-s-blue p-2"
+      >
+        Clear History
       </div>
     )
   }
@@ -73,7 +87,10 @@ export default function HistoryPage() {
   }
   return (
     <div className="w-full mx-4 ">
-      {searchComponent()}
+      <div className="grid grid-cols-2">
+        <SearchComponent />
+        <ClearHistory />
+      </div>
       {searchTerm == '' ? (
         history.map((result) => {
           return (result.url ?? '').length > 1 && result.query == null ? (

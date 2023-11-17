@@ -11,7 +11,6 @@ export function closeOverlay(win: BrowserWindow) {
   LAST_WINDOW = -1
   const view = getOverlay(win)
   if (view !== null) {
-    console.log('closeOverlay', 'removing webview', view.webContents.id)
     setViewData(view, 'type', '')
     try {
       if (BrowserWindow.fromBrowserView(view) === win) {
@@ -19,7 +18,6 @@ export function closeOverlay(win: BrowserWindow) {
       }
     } catch (e) {}
     ;((view as any).webContents as any).destroy()
-    console.log('CLOSED OVERLAY')
   }
 }
 
@@ -68,7 +66,6 @@ export async function openOverlay(
   } catch (e) {
     return
   }
-  console.log('size:', size, 'Pos', pos)
   view.setBounds({ width: size.width, height: size.height, x: pos.x, y: pos.y })
   if (focus) {
     view.webContents.focus()
@@ -77,18 +74,15 @@ export async function openOverlay(
 }
 
 export function isOverlay(view: BrowserView) {
-  console.log('!! isOverlay')
   try {
     if (view === null || view.webContents === null || view.webContents.isDestroyed()) return
     return getViewData(view, 'type') == 'overlay'
   } catch (e) {
-    console.log('isOverlay error', e)
     return null
   }
 }
 
 export function getOverlay(win: BrowserWindow) {
-  console.log('!! getOverlay')
   const webContents = win.webContents
   if (!webContents) {
     return null

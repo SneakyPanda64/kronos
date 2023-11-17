@@ -1,24 +1,6 @@
 import axios from 'axios'
-import { getJWT, resetJWT, saveJWT } from './db'
 import { HistoryItem } from './interfaces'
-
-export async function addHistorySync(item: HistoryItem) {
-  let jwt = await getJWT()
-  if (jwt != '') {
-    await axios
-      .post('https://kronos.atlasservers.net/api/sync/v1/add_history', item, {
-        headers: {
-          Authorization: `Bearer ${jwt}`
-        }
-      })
-      .then((response) => {
-        console.log('RESP', response.statusText)
-      })
-      .catch((err) => {
-        console.log('SYNC error', err)
-      })
-  }
-}
+import storage from 'electron-json-storage'
 
 export async function logoutUser() {
   await resetJWT()
@@ -57,4 +39,40 @@ export async function loginUser(email: string, password: string) {
     // console.error('Login Error:', error)
     return 'Invalid email/password'
   }
+}
+
+export async function resetJWT() {
+  storage.set('auth', {
+    jwt: ''
+  })
+}
+
+export async function saveJWT(jwt: string) {
+  storage.set(
+    'auth',
+    {
+      jwt: jwt
+    },
+    function (error) {
+      if (error) throw error
+    }
+  )
+}
+
+export async function getJWT() {
+  return new Promise((resolve, reject) => {
+    storage.get('auth', async (error, data) => {
+      if (error) {
+        reject(error)
+      } else {
+        try {
+          console.log('???', data.jwt)
+
+          resolve(data.jwt ?? '')
+        } catch (e) {
+          reject(e)
+        }
+      }
+    })
+  })
 }

@@ -67,8 +67,5 @@ export function getViewData(view: BrowserView, key: string) {
   // @ts-ignore
   if (view.data === undefined) return null
   // @ts-ignore
-
-  console.log('getViewData', key, view.data)
-  // @ts-ignore
   return view.data[key]
 }

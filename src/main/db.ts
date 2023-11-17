@@ -2,53 +2,22 @@ import storage from 'electron-json-storage'
 import { HistoryItem, QueryItem } from './interfaces'
 import { getFaviconData } from './favicon'
 import axios from 'axios'
-import { addHistorySync } from './auth'
+import { getJWT } from './auth'
 
 const VERIFY_ID = '6713de00-4386-4a9f-aeb9-0949b3e71eb7'
 
 const searchUrls = ['https://duckduckgo.com/?q=', 'https://www.google.com/search?q=']
 
-export async function resetJWT() {
-  storage.set('auth', {
-    jwt: ''
-  })
-}
-
-export async function saveJWT(jwt: string) {
-  storage.set(
-    'auth',
-    {
-      jwt: jwt
-    },
-    function (error) {
-      if (error) throw error
-    }
-  )
-}
-
-export async function getJWT() {
-  return new Promise((resolve, reject) => {
-    storage.get('auth', async (error, data) => {
-      if (error) {
-        reject(error)
-      } else {
-        try {
-          console.log('???', data.jwt)
-
-          resolve(data.jwt ?? '')
-        } catch (e) {
-          reject(e)
-        }
-      }
-    })
-  })
-}
-
 export async function addHistory(item: HistoryItem | QueryItem | any) {
-  console.log('attempt add history')
-  if (item.url === undefined || (!item.url.includes(VERIFY_ID) && item.url.length > 3)) {
+  console.log('attempt add history id:', item.id)
+  if (
+    item.url === undefined ||
+    item.url === '' ||
+    (!item.url.includes(VERIFY_ID) && item.url.length > 3)
+  ) {
     if (
       item.url !== undefined &&
+      item.url !== '' &&
       (item.url.includes(searchUrls[0]) || item.url.includes(searchUrls[1]))
     ) {
       console.log('overriting url with query')
@@ -60,25 +29,7 @@ export async function addHistory(item: HistoryItem | QueryItem | any) {
       item.url = undefined
     }
     console.log('adding history', item.id)
-    let newHistory: any
-    await getHistory()
-      .then(async (history) => {
-        newHistory = history
-        newHistory.push(item)
-      })
-      .catch(() => {
-        newHistory = []
-      })
-    storage.set(
-      'history',
-      {
-        history: Object.keys(newHistory).length === 0 ? [] : newHistory
-      },
-      function (error) {
-        if (error) throw error
-      }
-    )
-    await addHistorySync(item)
+    await addHistorySync([item], true)
   }
 }
 
@@ -102,9 +53,18 @@ export async function getHistory() {
             const promises = sortedEntries.map(async ([id, entry]) => {
               if ((entry as any).url !== undefined && (entry as any).url !== '') {
                 const favicon = await getFaviconData((entry as any).url ?? '')
-                return { id, url: (entry as any).url, title: (entry as any).title, favicon }
+                return {
+                  id: (entry as any).id,
+                  url: (entry as any).url,
+                  title: (entry as any).title,
+                  favicon
+                }
               } else if ((entry as any).query !== undefined && (entry as any).query !== '') {
-                return { id, query: (entry as any).query, title: (entry as any).title }
+                return {
+                  id: (entry as any).id,
+                  query: (entry as any).query,
+                  title: (entry as any).title
+                }
               }
               return null
             })
@@ -113,13 +73,98 @@ export async function getHistory() {
               const result = (await Promise.all(promises)).filter(Boolean) // Filter out null entries
               resolve(result)
             } catch (error) {
-              reject(error)
+              resolve([])
             }
           }
         } catch (e) {
-          reject(e)
+          resolve([])
         }
       }
     })
   })
+}
+
+export async function syncHistory() {
+  console.log('[Sync] Syncing history')
+  let jwt = await getJWT()
+  if (jwt != '') {
+    storage.set(
+      'sync',
+      {
+        lastSynced: Date.now()
+      },
+      () => {}
+    )
+    let myHistory: any = await getHistory()
+    console.log('SENDING', myHistory.slice(0, 1000))
+    await axios
+      .post(
+        'https://kronos.atlasservers.net/api/sync/v1/sync_history',
+        {
+          history: myHistory.slice(0, 1000)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`
+          }
+        }
+      )
+      .then(async (response) => {
+        console.log('RESP', response.data['history'])
+        await addHistorySync(response.data['history'], false)
+      })
+      .catch((err) => {
+        console.log('SYNC error', err)
+      })
+  }
+}
+
+export async function clearHistory() {
+  storage.set(
+    'history',
+    {
+      history: []
+    },
+    () => {}
+  )
+}
+
+export async function addHistorySync(items: HistoryItem[], sync: boolean) {
+  let newHistory: any = []
+  await getHistory()
+    .then((history: any) => {
+      newHistory = history
+      newHistory.push(...items)
+      storage.set(
+        'history',
+        {
+          history: newHistory
+        },
+        () => {
+          console.log('added new history!!! _------------')
+        }
+      )
+    })
+    .catch(() => {
+      newHistory = []
+    })
+  let jwt = await getJWT()
+  if (jwt != '' && sync) {
+    for (let item of items) {
+      await axios
+        .post('https://kronos.atlasservers.net/api/sync/v1/add_history', item, {
+          headers: {
+            Authorization: `Bearer ${jwt}`
+          }
+        })
+        .then((response) => {
+          // console.log('RESP', response.data)
+          console.log('RESPONSE!!!!!!!', response.data['id'])
+          item.id = response.data['id']
+        })
+        .catch((err) => {
+          console.log('SYNC error', err)
+        })
+    }
+  }
 }

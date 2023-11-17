@@ -50,7 +50,7 @@ export async function goToUrl(tabId: number, url: string) {
     if (query != '' && getWindowData(win!).private == false) {
       console.log('adding query history!')
       addHistory({
-        id: `${uuidv4()}`,
+        id: uuidv4(),
         query: query,
         timestamp: Math.floor(Date.now() / 1000)
       })

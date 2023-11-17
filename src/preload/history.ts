@@ -7,6 +7,12 @@ const history = {
       callback(history)
     })
     ipcRenderer.send('get-history', allowQueries)
+  },
+  clearHistory: (callback: any) => {
+    ipcRenderer.once('clear-history-reply', (_) => {
+      callback()
+    })
+    ipcRenderer.send('clear-history')
   }
 }
 
