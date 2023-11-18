@@ -1,4 +1,4 @@
-# Amenoi
+# Kronos
 
 An Electron application with React and TypeScript
 

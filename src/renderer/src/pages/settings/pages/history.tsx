@@ -44,9 +44,9 @@ export default function HistoryPage() {
             console.log('cleared history')
           })
         }}
-        className="bg-s-blue p-2"
+        className=""
       >
-        Clear History
+        {/* Clear History */}
       </div>
     )
   }
